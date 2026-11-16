@@ -6,3 +6,4 @@ out/
 .env
 .pytest_cache/
 assets/voice/candidates/
+.secrets/
