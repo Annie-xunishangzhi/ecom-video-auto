@@ -1,0 +1,82 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+:root{--paper:#F3EFE6;--ink:#141210;--sig:#FF4D1A;--ok:#17865A;--mut:#8A8378;--line:#D8D0BF;--card:#FFFDF8}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--ink);font-family:"Noto Sans CJK SC","Noto Sans CJK JP",sans-serif;-webkit-font-smoothing:antialiased}
+.sc{position:absolute;inset:0;overflow:hidden;display:none}
+.abs{position:absolute}
+.mono{font-family:"DejaVu Sans Mono","Noto Sans Mono CJK SC",monospace}
+.h{font-weight:900;letter-spacing:-2px;line-height:1.08}
+.k{font-size:34px;font-weight:700;letter-spacing:4px}
+.num{font-weight:900;font-size:220px;line-height:1;letter-spacing:-8px}
+/* S1 */
+#s1{background:var(--ink);color:var(--paper)}
+.tag{position:absolute;padding:18px 34px;border:3px solid #3A342D;border-radius:999px;font-size:44px;font-weight:700;color:#CFC6B4;background:#1D1A17;white-space:nowrap}
+.tag.hot{border-color:var(--sig);color:var(--sig)}
+/* S2 */
+#s2{background:var(--paper);color:var(--ink)}
+.tbl{position:absolute;left:70px;right:70px;top:640px;background:var(--card);border:3px solid var(--ink);border-radius:24px;overflow:hidden}
+.tr{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;border-bottom:2px solid var(--line);font-size:40px;height:104px;align-items:center}
+.tr>div{padding:0 26px}
+.tr.th{background:var(--ink);color:var(--paper);font-size:32px;font-weight:700;height:88px;letter-spacing:2px}
+.cell-bad{color:var(--sig);font-weight:900}
+.loop{position:absolute;left:70px;right:70px;top:1330px;display:flex;justify-content:space-between}
+.step{font-size:40px;font-weight:700;padding:20px 26px;border-radius:16px;border:3px solid var(--ink);background:var(--card)}
+.step.on{background:var(--ink);color:var(--paper)}
+/* S3 */
+#s3{background:var(--sig);color:var(--ink)}
+/* S4 */
+#s4{background:var(--ink);color:var(--paper)}
+.term{position:absolute;left:70px;right:70px;top:640px;height:640px;background:#0B0A09;border:3px solid #3A342D;border-radius:28px;padding:110px 50px 40px;font-size:40px;line-height:1.9}
+.dots{position:absolute;left:40px;top:38px;display:flex;gap:16px}.dots i{width:22px;height:22px;border-radius:50%;background:#3A342D;display:block}
+.g{color:#5BD69B}.s{color:var(--sig)}.m{color:#857C6E}
+.badge{position:absolute;left:70px;right:70px;top:1340px;height:150px;border-radius:24px;background:#5BD69B;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:24px;font-size:52px;font-weight:900}
+/* S5 */
+#s5{background:var(--paper);color:var(--ink)}
+.form{position:absolute;left:70px;right:70px;top:630px;background:var(--card);border:3px solid var(--ink);border-radius:28px;padding:40px 44px}
+.fr{display:flex;align-items:center;height:118px;border-bottom:2px dashed var(--line);font-size:40px}
+.fr:last-child{border-bottom:none}
+.fl{width:190px;color:var(--mut);font-size:34px;font-weight:700;letter-spacing:2px}
+.fv{flex:1;font-weight:700;white-space:nowrap;overflow:hidden}
+.car{display:inline-block;width:5px;height:44px;background:var(--sig);vertical-align:middle;margin-left:4px}
+.rb{font-size:30px;font-weight:700;color:var(--ok);border:3px solid var(--ok);border-radius:999px;padding:6px 20px;white-space:nowrap}
+.note{position:absolute;right:70px;font-size:28px;color:var(--mut)}
+/* S6 */
+#s6{background:var(--paper);color:var(--ink)}
+.ck{position:absolute;left:70px;right:70px;height:120px;display:flex;align-items:center;gap:30px;font-size:46px;font-weight:700;border-bottom:3px solid var(--ink)}
+.box{width:64px;height:64px;border:4px solid var(--ink);border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none}
+.box svg{width:44px;height:44px}
+.ck small{margin-left:auto;font-size:30px;color:var(--mut);font-weight:400}
+.btn{position:absolute;left:70px;right:70px;top:1420px;height:170px;border-radius:30px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:58px;font-weight:900;gap:20px}
+/* S7 */
+#s7{background:var(--ink);color:var(--paper)}
+.st{position:absolute;left:70px;right:70px;height:136px;border-radius:24px;border:3px solid #3A342D;display:flex;align-items:center;padding:0 40px;font-size:50px;font-weight:900;gap:30px;color:#6E665A}
+.st .dot{width:30px;height:30px;border-radius:50%;background:#3A342D;flex:none}
+.st em{font-style:normal;margin-left:auto;font-size:30px;font-weight:400}
+/* S8 */
+#s8{background:var(--sig);color:var(--ink)}
+.file{position:absolute;left:150px;right:150px;height:150px;background:var(--card);border:4px solid var(--ink);border-radius:24px;display:flex;align-items:center;gap:30px;padding:0 40px;font-size:46px;font-weight:900;box-shadow:12px 12px 0 var(--ink)}
+.file b{font-size:30px;font-weight:700;color:var(--paper);background:var(--ink);border-radius:10px;padding:6px 14px}
+.file span{margin-left:auto;font-size:30px;color:var(--mut);font-weight:400}
+.foot{position:absolute;left:70px;right:70px;font-size:30px;line-height:1.6}
+.mascot{position:absolute;z-index:40;transform-origin:50% 89%;display:none;filter:drop-shadow(0 14px 18px rgba(0,0,0,.22))}
+.mascot>img{position:absolute;inset:0;width:100%;height:100%}
+#mSweat,#mBang,#mSpark{display:none}
+.spk{position:absolute;width:14%;transform-origin:50% 50%}
+.bub{position:absolute;z-index:45;display:none;background:#fff;border:4px solid #141210;border-radius:30px;padding:18px 30px;font-size:42px;font-weight:900;color:#141210;white-space:nowrap;box-shadow:7px 7px 0 #141210}
+.bub::after{content:"";position:absolute;width:26px;height:26px;background:#fff;border:4px solid #141210;border-top:none;border-left:none}
+.bub.r{transform-origin:100% 50%}.bub.r::after{right:-17px;top:50%;margin-top:-13px;transform:rotate(-45deg)}
+.bub.b{transform-origin:20% 100%}.bub.b::after{left:46px;bottom:-17px;transform:rotate(45deg)}
+.wipe{position:absolute;inset:0;z-index:50;display:none}
+.sc.acc .s{color:var(--paper)}
+.sc .s{color:var(--sig)}.sc.acc .s{color:var(--paper)}
+.sc.acc .m{color:var(--ink);font-weight:400}
+</style></head>
+<body>
+<script>
+// 内容文件：默认 content.js；也可用 ?c=content.pdd.js 指定
+document.write('<script src="'+(new URLSearchParams(location.search).get('c')||'content.js')+'"><\/script>');
+</script>
+<script src="engine.js"></script>
+</body></html>

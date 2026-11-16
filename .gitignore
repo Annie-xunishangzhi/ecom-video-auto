@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+.superpowers/
+out/
+*.env
+.env
+.pytest_cache/
+assets/voice/candidates/
