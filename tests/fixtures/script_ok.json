@@ -1,0 +1,15 @@
+{"id":"2026-11-17-s4-a","type":"product","step":4,"angle_index":0,
+ "skill":{"provided":true,"name":"pdd-publish-assistant"},
+ "structure":"contrast-then-suspense","mid_hook":"steps","theme":"paper","mood":"upbeat",
+ "title":"上架一千个商品要多久","tags":["#电商自动化","#拼多多运营","#商品上架"],
+ "cta":{"keyword":"上架","platform":"douyin"},
+ "images":[{"scene":0,"prompt":"深夜的电商办公室，桌上堆满表格和样品"}],
+ "scenes":[
+  {"type":"hookContrast","about":"manual","vo":"一千个商品要上架，人工一个个填，几个人要忙好几天。","left":{"label":"人工上架","value":"好几天","note":"估算"},"right":{"label":"自动上架","value":"自己填","note":""},"line":"一千个商品要上架","mascot":{"pos":"bottomRight","pose":"shock"}},
+  {"type":"footage","slot":"hook","vo":"交给自动化，看它自己填。","line":"看它自己填","timer":true},
+  {"type":"statement","vo":"标题、类目、规格、价格、库存，全部按资料自动填好，填一项核对一项。","kicker":"拼多多发布助手","line1":"按资料{b}自动填","line2":"填一项{b}核一项"},
+  {"type":"steps","mid_hook":true,"hide_last":true,"vo":"想用上它只要三步，前两步很简单，最后一步最关键。","title":"用上它只要三步","items":["准备商品资料","让助手连上后台","提交前亲自确认"]},
+  {"type":"footage","slot":"mid","vo":"第一步准备好商品资料，第二步让助手连上后台。","line":"前两步很简单","timer":false},
+  {"type":"reveal","payoff":true,"vo":"第三步，提交之前它会停下来，让你亲自确认。","num":"03","title":"提交前，停下给你看","line":"你点头，它才提交"},
+  {"type":"cta","vo":"这个上架助手免费送，关注我，评论区发上架两个字，私信发你。","kicker":"免费领取","title":"关注{b}{s:评论「上架」}","files":[],"foot":"私信发你","mascot":{"pos":"cta","pose":"wave","wave":true}}
+ ]}
