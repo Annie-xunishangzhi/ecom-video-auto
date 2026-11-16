@@ -7,6 +7,7 @@
    每个场景可选：dur（秒，不填用默认）、bg（paper/ink/accent 或任意颜色）、mascot（吉祥物）
    ====================================================================== */
 window.CONTENT = {
+  legacyLayout: true,
   palette: { paper: '#F3EFE6', ink: '#141210', accent: '#FF4D1A', ok: '#17865A' },
   bpm: 120,
 

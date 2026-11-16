@@ -14,12 +14,15 @@ function pop(el,t,a,d=0.45){if(!el)return;const p=pr(t,a,a+d);el.style.opacity=c
 const fmt=s=>String(s??'').replace(/\{([gsm]):([^}]*)\}/g,'<span class="$1">$2</span>').replace(/\{b\}/g,'<br>');
 const plain=s=>String(s??'').replace(/\{[gsm]:([^}]*)\}/g,'$1').replace(/\{b\}/g,'');
 const ck='<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="DO"/></svg>';
-const P=C.palette||{};
+const VO=window.VO||{};
+const TH=(window.THEMES||{})[C.theme]||{};
+const P=Object.assign({},TH,C.palette||{});
+const FLIP=!!P.flip;const bgOf=b=>FLIP?(b==='paper'?'ink':b==='ink'?'paper':b):b;
 const BGS={paper:'var(--paper)',ink:'var(--ink)',accent:'var(--sig)'};
 const FG={paper:'var(--ink)',ink:'var(--paper)',accent:'var(--ink)'};
 const root=document.documentElement.style;
 if(P.paper)root.setProperty('--paper',P.paper);if(P.ink)root.setProperty('--ink',P.ink);if(P.accent)root.setProperty('--sig',P.accent);
-if(P.ok)root.setProperty('--ok',P.ok);
+if(P.ok)root.setProperty('--ok',P.ok);if(P.font)root.setProperty('--font',P.font);
 
 /* ---------- 场景类型 ---------- */
 const SLOTS=[[90,250],[560,210],[300,380],[720,360],[80,520],[360,540],[760,520],[120,690],[470,700],[800,680],[140,860],[560,860],[260,1020],[820,1010]];
@@ -108,14 +111,18 @@ const TYPES={
 };
 
 /* ---------- 搭建 ---------- */
-const SC=C.scenes;const T=[0];
-SC.forEach((sc,i)=>{const ty=TYPES[sc.type];if(!ty)throw new Error('未知场景类型 '+sc.type);sc._dur=sc.dur||ty.dur;sc._bg=sc.bg||ty.bg;T.push(T[i]+sc._dur)});
-document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TYPES[sc.type].build(sc,'s'+i+'_')}</div>`).join(''));
+Object.assign(TYPES,(window.EXTRA_TYPES?window.EXTRA_TYPES({$,cl,pr,eo,eb,rise,pop,fmt,plain,W,C,TYPES}):{}));
+for(const k in TYPES)if(!TYPES[k])delete TYPES[k];
+const SC=C.scenes.slice();if(C.outro&&TYPES.outro)SC.push({type:'outro',mascot:{pos:'big',pose:'wave',wave:true,in:0.45}});const T=[0];
+SC.forEach((sc,i)=>{const ty=TYPES[sc.type];if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=Math.max(sc.dur||ty.dur,sc._vo?sc._lead+sc._vo+sc._tail:0);sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
+document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};--scbg:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TYPES[sc.type].build(sc,'s'+i+'_')}</div>`).join(''));
 
 /* ---------- 吉祥物 ---------- */
 const M=C.mascot||null;
-const PRESET={topRight:{S:360,x:700,f:450,bub:[745,95,'r']},bottomRight:{S:440,x:650,f:1900,bub:[700,1600,'r']},
- big:{S:640,x:470,f:1890,bub:[620,1235,'b']},cta:{S:480,x:620,f:1965,bub:[680,1455,'r']}};
+const PRESET=C.legacyLayout?{topRight:{S:360,x:700,f:450,bub:[745,95,'r']},bottomRight:{S:440,x:650,f:1900,bub:[700,1600,'r']},
+ big:{S:640,x:470,f:1890,bub:[620,1235,'b']},cta:{S:480,x:620,f:1965,bub:[680,1455,'r']}}
+ :{topRight:{S:300,x:740,f:450,bub:[760,190,'r']},bottomRight:{S:360,x:680,f:1440,bub:[700,1180,'r']},
+ big:{S:520,x:520,f:1440,bub:[600,880,'b']},cta:{S:400,x:650,f:1440,bub:[690,1150,'r']}};
 const MP={};
 if(M){SC.forEach((sc,i)=>{const m=sc.mascot;if(!m)return;const pre=PRESET[m.pos||'bottomRight'];const b=m.bubble||pre.bub;
  const say=(m.say||[]);MP[i]={...pre,...m,S:m.S||pre.S,x:m.x??pre.x,f:m.f??pre.f,in:m.in??0.35,pz:m.pose?(typeof m.pose==='string'?[[0,m.pose]]:m.pose):[[0,'base']],
@@ -167,11 +174,37 @@ function seek(t){
  SC.forEach((sc,k)=>$('sc'+k).style.display=k===i?'block':'none');
  const lt=t-T[i];TYPES[SC[i].type].anim(SC[i],'s'+i+'_',lt);mascot(i,lt);
  const w=$('wipe');
- if(i>0&&lt<0.35){const p=eo(lt/0.35);w.style.display='block';w.style.background=BGS[SC[i-1]._bg]||SC[i-1]._bg;w.style.transform=`translateY(${-p*100}%)`}else w.style.display='none';
+ if(i>0&&lt<0.35){const p=eo(lt/0.35);w.style.display='block';const bg=BGS[SC[i-1]._bg]||SC[i-1]._bg;const tr=(window.TRANSITIONS||{})[SC[i].tr||P.transition];
+  if(tr)tr(w,p,bg);else{w.style.background=bg;w.style.transform=`translateY(${-p*100}%)`}}else w.style.display='none';
+ caption(t);
  document.body.style.opacity=1-pr(t,T.at(-1)-0.6,T.at(-1));
 }
 // 给配乐用的时间线：转场点 + 音效点
 const sfx=[];SC.forEach((sc,i)=>{(TYPES[sc.type].sfx?.(sc)||[]).forEach(([a,k])=>sfx.push([+(T[i]+a).toFixed(3),k]));const m=MP[i];if(m){(m.hop||[]).forEach(h=>sfx.push([T[i]+h,'pop']));if(m.startle!==undefined)sfx.push([T[i]+m.startle,'pop'])}});
-window.TIMELINE={dur:T.at(-1),cuts:T.slice(1,-1),sfx,bpm:C.bpm||120};
+// 字幕：按标点把配音文本切成短句，按字数分配时长
+const CAPS=[];const voice=[];const footage=[];
+SC.forEach((sc,i)=>{if(sc.type==='footage')footage.push({scene:i,slot:sc.slot||null,at:+T[i].toFixed(3),dur:+sc._dur.toFixed(3)});
+ if(!sc._vo)return;voice.push({id:sc.v,at:+(T[i]+sc._lead).toFixed(3)});
+ const parts=String(sc.cap||sc.vo||'').split(/[，。！？、；：,.!?;:\s]+/).filter(Boolean);const n=parts.reduce((a,b)=>a+b.length,0)||1;let at=T[i]+sc._lead;
+ parts.forEach(x=>{const d=sc._vo*x.length/n;CAPS.push([+at.toFixed(3),+(at+d).toFixed(3),x]);at+=d})});
+if(C.captions!==false&&!C.legacyLayout)document.body.insertAdjacentHTML('beforeend','<div id="cap"><span id="capT"></span></div>');
+function caption(t){const el=$('cap');if(!el)return;const c=CAPS.find(c=>t>=c[0]&&t<c[1]);
+ if(!c){el.style.display='none';return}el.style.display='flex';const s=$('capT');s.textContent=c[2];s.style.fontSize=Math.min(48,900/c[2].length)+'px'}
+// .col 的上下边界：避开吉祥物
+SC.forEach((sc,i)=>{const c=$('s'+i+'_col');if(!c)return;const m=MP[i];let top=190,bottom=1440;
+ if(m){const mt=m.f-FEET*m.S;if(mt<700)top=Math.max(top,m.f+20);else bottom=Math.min(bottom,mt-20)}
+ c.style.top=top+'px';c.style.height=(bottom-top)+'px'});
+// 自动缩字：先缩小字号（最多到 60%），还放不下就换行；整列仍超高则整体缩小
+function fitAll(){document.querySelectorAll('.sc').forEach(sc=>{const d=sc.style.display;sc.style.display='block';
+ sc.querySelectorAll('[data-fit]').forEach(el=>{const op=el.style.transform;el.style.transform='none';if(!el.dataset.fs)el.dataset.fs=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=el.dataset.fs+'px';el.style.whiteSpace='nowrap';let fs=+el.dataset.fs;const min=fs*0.6;
+  while(el.scrollWidth>el.clientWidth+1&&fs>min){fs*=0.95;el.style.fontSize=fs+'px'}
+  if(el.scrollWidth>el.clientWidth+1){el.style.whiteSpace='normal';el.style.wordBreak='break-all'}el.style.transform=op});
+ const c=sc.querySelector('.col');if(c){c.style.zoom='';let z=1;while(c.scrollHeight>c.clientHeight+1&&z>0.4){z-=0.04;c.style.zoom=z;c.style.width=(940/z)+'px'}}
+ sc.style.display=d})}
+fitAll();
+window.ready=async()=>{await document.fonts.ready;
+ await Promise.all([...document.images].map(im=>im.complete?(im.naturalWidth?null:Promise.reject(new Error('图片加载失败：'+im.getAttribute('src')))):new Promise((res,rej)=>{im.onload=res;im.onerror=()=>rej(new Error('图片加载失败：'+im.getAttribute('src')))})));
+ await Promise.all(SC.map(sc=>TYPES[sc.type].load?TYPES[sc.type].load(sc):null));fitAll();seek(0)};
+window.TIMELINE={dur:T.at(-1),cuts:T.slice(1,-1),sfx,bpm:C.bpm||120,voice,captions:CAPS,footage};
 window.seek=seek;window.T=T;
 })();

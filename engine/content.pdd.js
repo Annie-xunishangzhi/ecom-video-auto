@@ -1,5 +1,6 @@
 /* 示例：拼多多发布助手宣传片（企鹅版成片的内容） */
 window.CONTENT = {
+  legacyLayout: true,
   palette: { paper: '#F3EFE6', ink: '#141210', accent: '#FF4D1A', ok: '#17865A' },
   mascot: { dir: '../assets/mascot', poses: ['base', 'talk', 'blink', 'phone', 'point', 'cheer', 'shock', 'clip', 'wave'] },
   scenes: [

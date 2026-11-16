@@ -15,7 +15,7 @@ export async function openContent(content, VO={}, engineDir=path.join(ROOT,'engi
   fs.writeFileSync(f,`window.CONTENT=${JSON.stringify(content)};window.VO=${JSON.stringify(VO)};`);
   const b=await getBrowser(); const p=await b.newPage({viewport:{width:1080,height:1920}});
   const errs=[]; p.on('pageerror',e=>errs.push(e.message));
-  await p.goto(pageUrl(engineDir,f)); await p.evaluate(()=>document.fonts.ready);
+  await p.goto(pageUrl(engineDir,f)); await p.evaluate(()=>document.fonts.ready); await p.evaluate(()=>window.ready?window.ready():null);
   if(errs.length) throw new Error('page error: '+errs.join('; '));
   return p;
 }
