@@ -1,17 +1,5 @@
 [
  {
-  "id": "2026-11-17-s4-a",
-  "date": "2026-11-17",
-  "type": "product",
-  "step": 4,
-  "angle_index": 0,
-  "structure": "contrast-then-suspense",
-  "mid_hook": "steps",
-  "theme": "paper",
-  "track": "upbeat-001",
-  "has_footage": true
- },
- {
   "id": "2026-11-17-s2-a",
   "date": "2026-11-17",
   "type": "product",
@@ -34,5 +22,17 @@
   "theme": "dusk",
   "track": "tense-001",
   "has_footage": false
+ },
+ {
+  "id": "2026-11-17-s4-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 4,
+  "angle_index": 0,
+  "structure": "contrast-then-suspense",
+  "mid_hook": "steps",
+  "theme": "paper",
+  "track": "composed-76778",
+  "has_footage": true
  }
 ]

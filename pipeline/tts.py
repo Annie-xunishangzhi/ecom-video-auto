@@ -41,8 +41,9 @@ class VoxCPMBackend:
         return self._m
     def say(self, text, ref_wav, ref_text, out):
         m = self._model()
-        wav = m.generate(text=text, prompt_wav_path=str(ref_wav), prompt_text=ref_text,
-                         reference_wav_path=str(ref_wav), cfg_value=2.0, inference_timesteps=10, seed=self.seed)
+        kw = dict(text=text, reference_wav_path=str(ref_wav), cfg_value=2.0, inference_timesteps=10, seed=self.seed)
+        if ref_text: kw.update(prompt_wav_path=str(ref_wav), prompt_text=ref_text)   # 有参考文本时用更贴近原声的克隆方式
+        wav = m.generate(**kw)
         write_wav(out, np.asarray(wav, dtype=np.float32).reshape(-1), sr=int(m.tts_model.sample_rate))
 
 def _trim(x: np.ndarray) -> np.ndarray:
@@ -79,6 +80,7 @@ def synthesize(segments, out_dir: Path, backend, ref_wav: Path, ref_text: str, r
     return durations
 
 ROOT = Path(__file__).resolve().parent.parent
+_BACKEND = None
 
 def voice_for_script(script: dict, out_dir: Path, backend_name: str = "voxcpm") -> dict:
     """给一个剧本合成全部配音到 out_dir/voice/。backend_name: voxcpm（本机真实合成）或 fake（测试）"""
@@ -88,13 +90,15 @@ def voice_for_script(script: dict, out_dir: Path, backend_name: str = "voxcpm") 
         backend = FakeBackend(); ref = vdir / "_ref.wav"; write_wav(ref, np.zeros(4800)); ref_text = ""
     else:
         ref = ROOT / "assets" / "voice" / "ref.wav"; ref_txt = ROOT / "assets" / "voice" / "ref.txt"
-        if not ref.is_file() or not ref_txt.is_file():
+        if not ref.is_file():
             raise TTSFailed("找不到参考音色 assets/voice/ref.wav：先运行 python tools/setup_tts.py，再运行 python tools/design_voice.py --auto")
         try:
             import voxcpm  # noqa: F401
         except ImportError:
             raise TTSFailed("这个 Python 环境里没有安装 voxcpm：先运行 python tools/setup_tts.py")
-        backend = VoxCPMBackend(); ref_text = ref_txt.read_text(encoding="utf-8").strip()
+        global _BACKEND
+        if _BACKEND is None: _BACKEND = VoxCPMBackend()        # 多个剧本共用一次模型加载
+        backend = _BACKEND; ref_text = ref_txt.read_text(encoding="utf-8").strip() if ref_txt.is_file() else ""
     return synthesize(segments(script), vdir, backend, ref, ref_text)
 
 def reuse_voice(script: dict, out_dir: Path) -> dict:

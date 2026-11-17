@@ -19,7 +19,7 @@ def run_make(root, script, *args, sid=None, tts="fake"):
     script = dict(script); script["id"] = sid or script["id"]
     d = root/"out"/script["id"]; d.mkdir(parents=True, exist_ok=True)
     (d/"script.json").write_text(json.dumps(script, ensure_ascii=False), encoding="utf-8")
-    r = subprocess.run([sys.executable, str(root/"pipeline"/"make.py"), str(d/"script.json"), "--tts-backend", tts, *args], capture_output=True, text=True, encoding="utf-8")
+    r = subprocess.run([sys.executable, str(root/"pipeline"/"make.py"), str(d/"script.json"), "--tts-backend", tts, "--music", "library", *args], capture_output=True, text=True, encoding="utf-8")
     return r, d
 def probe(f):
     o = subprocess.run(["ffprobe","-v","error","-show_entries","stream=codec_type,width,height,r_frame_rate:format=duration","-of","json",str(f)], capture_output=True, text=True)
@@ -77,6 +77,8 @@ def test_voice_dir_is_reused_without_resynthesis(cjk_root, ok):
     r = subprocess.run([sys.executable, str(cjk_root/"pipeline"/"make.py"), str(d/"script.json"), "--reuse-voice"], capture_output=True, text=True, encoding="utf-8")
     assert r.returncode == 0, r.stdout[-800:] + r.stderr[-800:]
     assert (d/"voice"/"s01.wav").stat().st_mtime_ns == stamp and (d/"reuse-1.mp4").exists()
+    hist = load_history(cjk_root/"data"/"history.json")[-1]; pub = json.loads((d/"publish.json").read_text(encoding="utf-8"))
+    assert hist["track"].startswith("composed-") and pub["music"]["title"] == "原创配乐" and "署名" not in pub["reminder"]
 def test_reuse_voice_with_changed_script_fails(cjk_root, ok):
     ok["structure"] = "count-up"; ok["mid_hook"] = "result_first"
     r, out = run_make(cjk_root, ok, sid="reuse-2"); assert r.returncode == 0, r.stdout[-500:]

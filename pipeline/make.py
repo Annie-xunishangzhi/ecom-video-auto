@@ -44,7 +44,7 @@ def _ffmpeg(args, cwd, what):
     if r.returncode != 0:
         raise Stop(f"{what}失败：{r.stderr.strip()[-300:]}")
 
-def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False) -> Path:
+def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False, music_mode: str = "compose") -> Path:
     script = json.loads(script_path.read_text(encoding="utf-8"))
     vid = script["id"]; out = script_path.parent
     history_path = ROOT / "data" / "history.json"; history = load_history(history_path)
@@ -93,12 +93,22 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
         raise Stop(f"成片时长 {secs:.1f} 秒，不在 {MIN_S}–{MAX_S} 秒内：配音文本大约要{'加' if secs < MIN_S else '删'} {int(diff * CPS) + 1} 个字")
 
     print("7/9 选曲与混音")
-    lib_path = ROOT / "assets" / "music" / "library.json"
-    library = json.loads(lib_path.read_text(encoding="utf-8")) if lib_path.is_file() else []
     try:
-        track = pick_track(library, script.get("mood"), history)
+        if music_mode == "compose":
+            from audio import write_wav
+            from compose import compose, plan_music, sections_from_script, seed_for
+            seed = seed_for(vid); mood = script.get("mood")
+            write_wav(out / "music.wav", compose(timeline, sections_from_script(script, timeline), mood, seed))
+            plan = plan_music(timeline, mood if mood else "upbeat", seed)
+            track = {"id": f"composed-{seed}", "file": str(out / "music.wav"), "aligned": True, "title": "原创配乐",
+                     "source": f"代码编曲（{plan['bpm']} BPM，{plan['palette']} 乐器组），音色库 GeneralUser GS",
+                     "license": "自有；音色库允许商用", "license_url": "", "attribution": ""}
+        else:
+            lib_path = ROOT / "assets" / "music" / "library.json"
+            library = json.loads(lib_path.read_text(encoding="utf-8")) if lib_path.is_file() else []
+            track = pick_track(library, script.get("mood"), history)
         mix(timeline, out / "voice", track, out / "audio.wav", out / f"{vid}.srt")
-    except (ValueError, FileNotFoundError, RuntimeError) as e:
+    except (ValueError, FileNotFoundError, RuntimeError, ImportError) as e:
         raise Stop(f"配乐失败：{e}")
 
     print("8/9 合成")
@@ -135,10 +145,11 @@ def main(argv=None) -> int:
         except Exception: pass
     ap = argparse.ArgumentParser()
     ap.add_argument("script"); ap.add_argument("--footage", action="append"); ap.add_argument("--tts-backend", default="voxcpm", choices=["voxcpm", "fake"])
+    ap.add_argument("--music", default="compose", choices=["compose", "library"], help="compose：按剧本段落原创编曲；library：从曲库选曲")
     ap.add_argument("--reuse-voice", action="store_true", help="复用 out/<id>/voice/ 里已合成的配音")
     a = ap.parse_args(argv)
     try:
-        final = run(Path(a.script).resolve(), a.footage, a.tts_backend, a.reuse_voice)
+        final = run(Path(a.script).resolve(), a.footage, a.tts_backend, a.reuse_voice, a.music)
     except Stop as e:
         print("✗", e); return 1
     print("✓ 成片：", final); return 0

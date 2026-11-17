@@ -27,7 +27,7 @@ def _music_bed(track: dict, n: int, cuts: list) -> np.ndarray:
         raise ValueError(f"曲子太短：{f}")
     rms = np.sqrt((m ** 2).mean()) or 1.0
     m *= 0.12 / rms
-    off = int(best_offset(cuts, track.get("bpm") or 0, track.get("first_beat") or 0.0) * SR)
+    off = 0 if track.get("aligned") else int(best_offset(cuts, track.get("bpm") or 0, track.get("first_beat") or 0.0) * SR)
     out = m[off:]
     xf = min(SR, len(m) // 4); up = np.linspace(0, 1, xf)[:, None]
     while len(out) < n:                       # 不够长就循环，接缝处交叉淡化

@@ -10,7 +10,7 @@
  "platform": "douyin",
  "comment_keyword": "上架",
  "seconds": 47.3,
- "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。配乐要求署名，请把 music.attribution 这一行贴进视频简介。",
+ "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。",
  "pending_footage": false,
  "pending_note": "",
  "images": [
@@ -25,12 +25,12 @@
   }
  ],
  "music": {
-  "id": "upbeat-001",
-  "title": "Voxel Revolution",
-  "source": "incompetech.com（Kevin MacLeod）",
-  "license": "CC BY 4.0（可商用，须署名）",
-  "license_url": "https://creativecommons.org/licenses/by/4.0/",
-  "attribution": "音乐：“Voxel Revolution” Kevin MacLeod (incompetech.com)，CC BY 4.0 授权 https://creativecommons.org/licenses/by/4.0/"
+  "id": "composed-76778",
+  "title": "原创配乐",
+  "source": "代码编曲（122 BPM，band 乐器组），音色库 GeneralUser GS",
+  "license": "自有；音色库允许商用",
+  "license_url": "",
+  "attribution": ""
  },
  "files": {
   "video": "2026-11-17-s4-a.mp4",
