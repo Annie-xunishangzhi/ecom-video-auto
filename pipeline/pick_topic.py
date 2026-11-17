@@ -53,4 +53,12 @@ if __name__ == "__main__":
     if r["step"]:
         t = next(t for t in topics if t["step"] == r["step"])
         r.update(name=t["name"], point=t["points"][r["angle_index"] % len(t["points"])], pain=t["pain"])
+    hist = load_history(ROOT / "data" / "history.json")
+    try:
+        sys.path.insert(0, str(ROOT / "tools")); import report
+        m = report.load_metrics(ROOT / "data" / "metrics.csv")
+        r["prefer"] = {"structure": report.recommend("structure", m, hist, {h.get("structure") for h in hist[-5:]}),
+                       "mid_hook": report.recommend("mid_hook", m, hist, {h.get("mid_hook") for h in hist[-3:]})}
+    except (OSError, ValueError, ImportError):
+        pass   # 还没有数据表或数据表有问题：不给偏好，照常选
     print(json.dumps(r, ensure_ascii=False, indent=1))
