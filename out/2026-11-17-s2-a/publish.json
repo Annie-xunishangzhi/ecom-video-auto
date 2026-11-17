@@ -9,8 +9,8 @@
  ],
  "platform": "douyin",
  "comment_keyword": "检查",
- "seconds": 46.0,
- "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。配乐要求署名，请把 music.attribution 这一行贴进视频简介。",
+ "seconds": 41.2,
+ "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。",
  "pending_footage": true,
  "pending_note": "实录槽位目前是示意画面，对应 skill 录屏后可替换重出。",
  "images": [
@@ -25,12 +25,12 @@
   }
  ],
  "music": {
-  "id": "playful-001",
-  "title": "Two Finger Johnny",
-  "source": "incompetech.com（Kevin MacLeod）",
-  "license": "CC BY 4.0（可商用，须署名）",
-  "license_url": "https://creativecommons.org/licenses/by/4.0/",
-  "attribution": "音乐：“Two Finger Johnny” Kevin MacLeod (incompetech.com)，CC BY 4.0 授权 https://creativecommons.org/licenses/by/4.0/"
+  "id": "composed-87032",
+  "title": "原创配乐",
+  "source": "代码编曲（120 BPM，mallet 乐器组），音色库 GeneralUser GS",
+  "license": "自有；音色库允许商用",
+  "license_url": "",
+  "attribution": ""
  },
  "files": {
   "video": "2026-11-17-s2-a.mp4",

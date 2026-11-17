@@ -1,5 +1,17 @@
 [
  {
+  "id": "2026-11-17-s4-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 4,
+  "angle_index": 0,
+  "structure": "contrast-then-suspense",
+  "mid_hook": "steps",
+  "theme": "paper",
+  "track": "composed-76778",
+  "has_footage": true
+ },
+ {
   "id": "2026-11-17-s2-a",
   "date": "2026-11-17",
   "type": "product",
@@ -8,7 +20,7 @@
   "structure": "pain-then-result-first",
   "mid_hook": "result_first",
   "theme": "mint",
-  "track": "playful-001",
+  "track": "composed-87032",
   "has_footage": false
  },
  {
@@ -20,19 +32,7 @@
   "structure": "question-then-pitfall",
   "mid_hook": "pitfall",
   "theme": "dusk",
-  "track": "tense-001",
+  "track": "composed-30621",
   "has_footage": false
- },
- {
-  "id": "2026-11-17-s4-a",
-  "date": "2026-11-17",
-  "type": "product",
-  "step": 4,
-  "angle_index": 0,
-  "structure": "contrast-then-suspense",
-  "mid_hook": "steps",
-  "theme": "paper",
-  "track": "composed-76778",
-  "has_footage": true
  }
 ]

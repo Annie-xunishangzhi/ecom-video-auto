@@ -9,7 +9,7 @@
  ],
  "platform": "douyin",
  "comment_keyword": "上架",
- "seconds": 47.3,
+ "seconds": 43.4,
  "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。",
  "pending_footage": false,
  "pending_note": "",
@@ -27,7 +27,7 @@
  "music": {
   "id": "composed-76778",
   "title": "原创配乐",
-  "source": "代码编曲（122 BPM，band 乐器组），音色库 GeneralUser GS",
+  "source": "代码编曲（120 BPM，band 乐器组），音色库 GeneralUser GS",
   "license": "自有；音色库允许商用",
   "license_url": "",
   "attribution": ""
