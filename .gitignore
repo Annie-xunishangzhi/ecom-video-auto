@@ -11,3 +11,7 @@ out/_*/
 .pytest_cache/
 assets/voice/candidates/
 .secrets/
+out/*.txt
+out/*.zip
+out/*.tgz
+out/成片/*.mp4

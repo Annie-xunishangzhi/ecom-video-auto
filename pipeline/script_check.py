@@ -73,6 +73,9 @@ def check(script: dict, history: list) -> list:
     # 企鹅
     if sum(1 for s in scenes if s.get("mascot")) < 2: P.append("企鹅至少出场两次")
     if not scenes[-1].get("mascot"): P.append("最后的转化场景里企鹅必须出场")
+    for i, s in enumerate(scenes):
+        m = s.get("mascot") or {}
+        if "hop" in m and not isinstance(m["hop"], list): P.append(f"第 {i+1} 个场景企鹅 hop 要写成时间列表，例如 [0.6, 2.2]")
     # 配图、录屏、标签
     if not 1 <= len(script.get("images") or []) <= 2: P.append("配图数量应为 1–2 张")
     foot = sum(scene_seconds(s) for s in scenes if s.get("type") == "footage")

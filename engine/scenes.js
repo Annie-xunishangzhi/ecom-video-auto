@@ -22,7 +22,7 @@ return {
   sfx:sc=>[[TYPES.counter.end(sc),'ding']]},
  timer:{dur:4.5,bg:'ink',
   end:sc=>Math.max(1.6,(sc._dur||4.5)*0.55),
-  build:(sc,id)=>col(id,`${T('h mid',id+'t',sc.title)}<div class="bignum mono" data-fit id="${id}n">00:00</div>${T('h cap',id+'c',sc.caption||'')}`),
+  build:(sc,id)=>col(id,`${T('h mid',id+'t',sc.title)}<div class="bignum mono" data-fit id="${id}n">${clock(sc.seconds||0)}</div>${T('h cap',id+'c',sc.caption||'')}`),
   anim:(sc,id,t)=>{const e=TYPES.timer.end(sc);rise($(id+'t'),t,0.1,0.4,40);
    $(id+'n').textContent=clock((sc.seconds||0)*eo(pr(t,0.4,e)));$(id+'n').style.color=t>=e?'var(--sig)':'';rise($(id+'c'),t,e+0.15,0.4,40)},
   sfx:sc=>[[TYPES.timer.end(sc),'ding']]},

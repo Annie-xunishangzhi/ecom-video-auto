@@ -114,7 +114,7 @@ const TYPES={
 Object.assign(TYPES,(window.EXTRA_TYPES?window.EXTRA_TYPES({$,cl,pr,eo,eb,rise,pop,fmt,plain,W,C,TYPES}):{}));
 for(const k in TYPES)if(!TYPES[k])delete TYPES[k];
 const SC=C.scenes.slice();if(C.outro&&TYPES.outro)SC.push({type:'outro',mascot:{pos:'big',pose:'wave',wave:true,in:0.45}});const T=[0];
-SC.forEach((sc,i)=>{const ty=TYPES[sc.type];if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=Math.max(sc.dur||ty.dur,sc._vo?sc._lead+sc._vo+sc._tail:0);sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
+SC.forEach((sc,i)=>{const ty=TYPES[sc.type];if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=sc._vo?Math.max(sc.dur||0,2.0,sc._lead+sc._vo+sc._tail):(sc.dur||ty.dur);/* 有配音时按配音长度走，避免画面停住没人说话 */sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
 document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};--scbg:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TYPES[sc.type].build(sc,'s'+i+'_')}</div>`).join(''));
 
 /* ---------- 吉祥物 ---------- */

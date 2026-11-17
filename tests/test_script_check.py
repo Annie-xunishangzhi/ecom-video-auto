@@ -70,3 +70,10 @@ def test_channels_cta_may_mention_gzh(ok, hist):
     assert check(ok, hist) == []
 def test_tags_three_to_five(ok, hist):
     ok["tags"] = ["#a"]; assert has(check(ok, hist), "话题")
+
+def test_mascot_hop_must_be_list_of_times():
+    import json, copy
+    from pathlib import Path
+    s = json.loads((Path(__file__).parent / "fixtures" / "script_ok.json").read_text(encoding="utf-8"))
+    s["scenes"][-1]["mascot"]["hop"] = True
+    assert any("hop" in p for p in check(s, []))

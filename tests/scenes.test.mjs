@@ -52,3 +52,9 @@ test('inline font sizes survive auto-fit (brand name stays large)', async () => 
   const h=await p.evaluate(()=>[...document.querySelectorAll('.sc [data-fit]')].find(e=>e.textContent==='韬行科技').getBoundingClientRect().height); await p.close();
   assert.ok(h>100, 'brand name height '+h);
 });
+test('timer: an hours-long clock (4:00:00) is not clipped', async () => {
+  const c=fixture('timer',{seconds:14400}); const TL=await timelineFor(c);
+  const p=await openContent(c); await p.evaluate(t=>seek(t),TL.dur-0.8);
+  const r=await p.evaluate(()=>{const e=document.querySelector('.sc .bignum');return {text:e.textContent,sw:e.scrollWidth,cw:e.clientWidth,right:e.getBoundingClientRect().left+e.scrollWidth}}); await p.close();
+  assert.equal(r.text,'4:00:00'); assert.ok(r.sw<=r.cw+1 && r.right<=1080, JSON.stringify(r));
+});

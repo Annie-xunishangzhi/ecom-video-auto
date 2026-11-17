@@ -7,6 +7,7 @@ from music_pick import best_offset
 
 ROOT = Path(__file__).resolve().parent.parent
 rng = np.random.default_rng(7)
+VOICE_PEAK = 0.62   # 人声峰值；用户要求人声比之前（0.85）稍低
 
 def _tone(f, d, att=.01, rel=.3):
     tt = np.arange(int(SR * d)) / SR
@@ -54,7 +55,7 @@ def mix(timeline: dict, voice_dir: Path, track: dict, out_wav: Path, out_srt: Pa
     for v, f in files:
         _add(vo, read_wav(f), v["at"])
     pk = np.abs(vo).max()
-    if pk > 0: vo *= .85 / pk
+    if pk > 0: vo *= VOICE_PEAK / pk
     for c in timeline.get("cuts", []):
         _add(fx, _whoosh(), c - .25, .35)
     for t0, k in timeline.get("sfx", []):

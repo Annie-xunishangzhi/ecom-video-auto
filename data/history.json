@@ -34,5 +34,53 @@
   "theme": "dusk",
   "track": "composed-30621",
   "has_footage": false
+ },
+ {
+  "id": "2026-11-17-s8-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 8,
+  "angle_index": 0,
+  "structure": "timer-race",
+  "mid_hook": "best_feature",
+  "theme": "ink",
+  "track": "composed-82894",
+  "has_footage": false
+ },
+ {
+  "id": "2026-11-17-s3-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 3,
+  "angle_index": 0,
+  "structure": "count-up",
+  "mid_hook": "steps",
+  "theme": "paper",
+  "track": "composed-51279",
+  "has_footage": false
+ },
+ {
+  "id": "2026-11-17-s6-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 6,
+  "angle_index": 0,
+  "structure": "day-in-life",
+  "mid_hook": "result_first",
+  "theme": "mint",
+  "track": "composed-48196",
+  "has_footage": false
+ },
+ {
+  "id": "2026-11-17-s1-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 1,
+  "angle_index": 0,
+  "structure": "contrast-then-suspense",
+  "mid_hook": "pitfall",
+  "theme": "dusk",
+  "track": "composed-46689",
+  "has_footage": false
  }
 ]
