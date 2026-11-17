@@ -26,7 +26,10 @@ def probe(f):
     j = json.loads(o.stdout); v = next(s for s in j["streams"] if s["codec_type"]=="video")
     return v["width"], v["height"], v["r_frame_rate"], any(s["codec_type"]=="audio" for s in j["streams"]), float(j["format"]["duration"])
 @pytest.fixture
-def ok(fx): return json.loads((fx/"script_ok.json").read_text(encoding="utf-8"))
+def ok(fx, request):
+    s = json.loads((fx/"script_ok.json").read_text(encoding="utf-8"))
+    if request.node.name != "test_make_end_to_end_fake_tts": s["mood"] = "warm"   # 和第一条成片错开情绪，免得被查重拦下
+    return s
 
 def test_make_end_to_end_fake_tts(cjk_root, ok):
     r, out = run_make(cjk_root, ok, sid="e2e-a")
@@ -40,6 +43,7 @@ def test_make_end_to_end_fake_tts(cjk_root, ok):
     assert pub["pending_footage"] is True and "AI" in pub["reminder"] and pub["music"]["license"] == "测试用" and pub["music"]["attribution"] == "测试署名" and pub["tags"] == ok["tags"]
 def test_real_footage_marks_not_pending(cjk_root, ok, fx):
     ok["structure"] = "timer-race"; ok["mid_hook"] = "pitfall"      # 避开上一条用过的结构和钩子
+    ok["theme"] = "ink"; ok["mood"] = "calm"                         # 同一份文案：再错开主题和情绪，查重才放行
     clip = fx/"clip.mp4"
     r, out = run_make(cjk_root, ok, "--footage", f"hook={clip}:0:2:1", "--footage", f"mid={clip}:0:2:1", sid="e2e-b")
     assert r.returncode == 0, r.stdout[-800:] + r.stderr[-800:]
@@ -68,7 +72,7 @@ def test_tts_unavailable_fails_cleanly(cjk_root, ok):
     assert r.returncode == 1 and ("参考音色" in r.stdout or "配音" in r.stdout) and not (out/"bad-4.mp4").exists()
     assert len(load_history(cjk_root/"data"/"history.json")) == before
 def test_voice_dir_is_reused_without_resynthesis(cjk_root, ok):
-    ok["structure"] = "pain-then-result-first"; ok["mid_hook"] = "best_feature"
+    ok["structure"] = "pain-then-result-first"; ok["mid_hook"] = "best_feature"; ok["theme"] = "mint"; ok["mood"] = "tense"
     script = dict(ok); script["id"] = "reuse-1"; d = cjk_root/"out"/"reuse-1"; d.mkdir(parents=True, exist_ok=True)
     (d/"script.json").write_text(json.dumps(script, ensure_ascii=False), encoding="utf-8")
     r = subprocess.run([sys.executable, str(cjk_root/"pipeline"/"tts.py"), str(d/"script.json"), "--backend", "fake"], capture_output=True, text=True, encoding="utf-8")
@@ -80,7 +84,7 @@ def test_voice_dir_is_reused_without_resynthesis(cjk_root, ok):
     hist = load_history(cjk_root/"data"/"history.json")[-1]; pub = json.loads((d/"publish.json").read_text(encoding="utf-8"))
     assert hist["track"].startswith("composed-") and pub["music"]["title"] == "原创配乐" and "署名" not in pub["reminder"]
 def test_reuse_voice_with_changed_script_fails(cjk_root, ok):
-    ok["structure"] = "count-up"; ok["mid_hook"] = "result_first"
+    ok["structure"] = "count-up"; ok["mid_hook"] = "result_first"; ok["theme"] = "dusk"; ok["mood"] = "playful"
     r, out = run_make(cjk_root, ok, sid="reuse-2"); assert r.returncode == 0, r.stdout[-500:]
     script = json.loads((out/"script.json").read_text(encoding="utf-8")); script["scenes"][2]["vo"] = "标题类目规格价格库存全部按资料自动填好并且逐项核对清楚明白。"
     script["structure"] = "day-in-life"; script["mid_hook"] = "steps"

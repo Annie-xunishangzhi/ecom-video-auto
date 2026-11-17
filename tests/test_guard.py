@@ -37,3 +37,11 @@ def test_fill_and_wait_not_blocked():
 def test_upload_of_dangerous_button_blocked():
     with pytest.raises(Blocked):
         check_action({"do": "press", "target": "text=发布", "name": "回车发布"}, set())
+
+@pytest.mark.parametrize("t", ["div.border-box", "#sender-list", ".preorder", "Ordered list"])
+def test_english_words_need_word_boundary(t):
+    assert not is_dangerous(t)
+
+@pytest.mark.parametrize("t", ["#submit-btn", "button.pay_now", "[data-action=publish]"])
+def test_english_selectors_still_caught(t):
+    assert is_dangerous(t)

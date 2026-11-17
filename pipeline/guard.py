@@ -15,9 +15,12 @@ _SEL_TEXT = re.compile(r"""(?:text\s*=\s*|has-text\(\s*['"]|text\(\s*['"]|:text\
 def _norm(s) -> str:
     return _SPACE.sub("", str(s or "")).lower()
 
+_EN = re.compile(r"(?<![a-z])(" + "|".join(w for w in WORDS if w.isascii()) + r")(?![a-z])")
+
 def is_dangerous(text) -> bool:
+    """中文关键词按包含匹配；英文关键词要求前后不是字母（border 不算 order，submit-btn 算 submit）。"""
     t = _norm(text)
-    return bool(t) and any(w in t for w in WORDS)
+    return bool(t) and (any(w in t for w in WORDS if not w.isascii()) or bool(_EN.search(str(text).lower())))
 
 def _target_text(target) -> str:
     m = _SEL_TEXT.search(str(target or ""))
