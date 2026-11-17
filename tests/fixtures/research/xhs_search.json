@@ -1,0 +1,5 @@
+{"code":0,"success":true,"data":{"has_more":true,"items":[
+ {"id":"6650000000000000000a","model_type":"note","xsec_token":"ABC","note_card":{"type":"video","display_title":"电商人必备的自动上架工具","interact_info":{"liked_count":"1.2万","comment_count":"356","collected_count":"3w+","shared_count":"1,024"}}},
+ {"id":"6650000000000000000b","model_type":"note","xsec_token":"DEF","note_card":{"type":"normal","display_title":"拼多多运营干货","interact_info":{"liked_count":"88","comment_count":"","collected_count":"10万+","shared_count":"2"}}},
+ {"id":"x","model_type":"hot_query"}
+]}}
