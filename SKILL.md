@@ -41,6 +41,28 @@ python pipeline/read_skill.py <步骤号> [skill 路径]
 - 有路径：得到 skill 的名称、简介和功能点，剧本里 `skill.provided` 写 `true`。
 - 没有路径：`skill.provided` 写 `false`，按通用功能点写，实录位置留空。**这时不能写"实测"，不能写自动化一侧的具体数字，结尾要说"上线后领取"。**
 
+## 2b. 录屏，生成素材包（有 skill 时）
+
+录到的片段放进实录槽位，实测数字才能写进剧本。**只在测试店铺、测试商品或虚构演示数据上录；默认停在提交之前；花钱或对外触达的动作（投放、报名、发消息、加好友）不真实执行。**
+
+先看这一步有没有可用的素材包：`assets/footage/s<步骤>/pack.json` 存在且 `review` 为 `ok`。有就跳到第 3 步。
+
+**本地网页工具**（例如商品资料检查）：写演示清单 `data/demos/s<步骤>.json`（照 `data/demos/s2.json`），然后
+
+```
+python pipeline/record_web.py data/demos/s<步骤>.json
+```
+
+每个点击都先过安全闸（`pipeline/guard.py`），按钮文字含提交、发布、确认、支付等会被拦下。确需点击时用 `--allow "按钮文字"` 明确放行，并先问用户。
+
+**由你在用户真实浏览器里执行的 skill**（例如拼多多上架，只支持 Windows）：
+1. 写 `out/_rec/start.json`：`{"step": "s4", "product": "拼多多上架", "title": null, "mask": [{"x":0,"y":0,"w":0.25,"h":0.06}]}`。`mask` 是要打码的区域（按画面比例 0–1），覆盖店铺名、账号、客户信息。
+2. 双击（或用电脑操控双击）`录屏开始.cmd`。
+3. 按 skill 执行，每做完一步往 `out/_rec/current.marks.jsonl` 追加一行 `{"name": "批量填写", "at": <Unix 时间戳>}`（批量处理那步加 `"hl": "hook"`）。**停在提交之前。**
+4. 双击 `录屏结束.cmd`，结果在 `out/rec_log.txt`。
+
+两种方式都会生成素材包。没有打码规则、或是真实后台录屏的素材包都是"待人工确认"：请用户看一遍录像，确认没有店铺名、账号、客户信息后运行 `python pipeline/pack.py approve s<步骤>`。待确认的素材包不会被用来出片。
+
 ## 3. 写剧本 `out/<编号>/script.json`
 
 编号用 `日期-s步骤-序号`，例如 `2026-11-17-s4-a`。格式照 `tests/fixtures/script_ok.json`。
@@ -55,7 +77,7 @@ python pipeline/read_skill.py <步骤号> [skill 路径]
 - 结构从 `data/structures.json` 里选，近 5 条用过的不能再用。主题（`paper` `ink` `mint` `dusk`）和情绪（`upbeat` `calm` `tense` `playful` `warm`）也要和最近几条错开。
 - 企鹅至少出场两次（场景里加 `mascot`），最后的 `cta` 必须有。
 - 配图 1–2 张，只作氛围示意。
-- 数字：自动化一侧只用实录里量出来的数；人工一侧可以估算，场景加 `"about": "manual"` 并在画面注明"估算"。
+- 数字：自动化一侧只用素材包里量出来的数（`pack.json` 的 `measured`），写了实测数字的场景加 `"measured": true`，检查时会和素材包核对；人工一侧可以估算，场景加 `"about": "manual"` 并在画面注明"估算"。
 - 禁用：必定、保证、100%、稳赚、暴利，以及任何收益承诺。收益只说"省下的时间拿去选品和运营"。
 
 **场景类型**（字段见 `tests/scene_fixtures.mjs`）
@@ -97,7 +119,13 @@ python pipeline/make.py out/<编号>/script.json
 python pipeline/make.py out/<编号>/script.json --footage hook=录屏.mp4:0:8:2 --footage mid=录屏.mp4:20:10:2
 ```
 
-`--footage 槽位=视频:起点秒:时长秒:倍速`。只换实录、不改文案时加 `--reuse-voice` 可以不重新配音。
+`--footage 槽位=视频:起点秒:时长秒:倍速`。有素材包时直接用 `--footage auto`，自动取高光片段；没有可用素材包就用示意占位。只换实录、不改文案时加 `--reuse-voice` 可以不重新配音。
+
+已发的占位版（`publish.json` 里 `pending_footage` 为 `true`），等这一步有了素材包，一键换成实录版：
+
+```
+python tools/refill.py <编号>
+```
 
 失败时会说明原因（例如时长超出、缺配图、配音失败），按提示处理后重跑。
 
@@ -113,4 +141,4 @@ python pipeline/make.py out/<编号>/script.json --footage hook=录屏.mp4:0:8:2
 
 - 曲库：`python tools/add_track.py 曲子.mp3 --mood upbeat --source 来源 --license 授权 [--attribution 署名行]`。没有来源和授权的曲子不会入库。
 - 新姿势的企鹅：`tools/mascot_outfit.py` 加装扮，`tools/mascot_finish.py` 抠图并统一画布。
-- 测试：`python -m pytest` 和 `node --test tests/`。
+- 测试：`python -m pytest` 和 `node --test tests/*.test.mjs`。
