@@ -99,7 +99,7 @@ def record_web(demo: dict, out_dir: Path, allow: set = frozenset(), headed: bool
             browser = p.chromium.launch(headless=not headed)
             vw, vh = demo.get("viewport") or (W, H)   # 视口小于录像尺寸时画面放大，竖屏里看得清
             ctx = browser.new_context(viewport={"width": vw, "height": vh}, record_video_dir=str(out_dir / "_raw"),
-                                      record_video_size={"width": W, "height": H}, locale="zh-CN")
+                                      record_video_size={"width": vw, "height": vh}, locale="zh-CN")
             page = ctx.new_page(); t0 = time.monotonic()
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=60000)
@@ -109,7 +109,8 @@ def record_web(demo: dict, out_dir: Path, allow: set = frozenset(), headed: bool
                     check_action(a, allow)
                     s = time.monotonic() - t0
                     _do(page, a, base)
-                    steps.append({"name": a.get("name") or a.get("target"), "start": round(s, 2), "end": round(time.monotonic() - t0, 2)})
+                    steps.append({"name": a.get("name") or a.get("target"), "start": round(s, 2), "end": round(time.monotonic() - t0, 2),
+                                  **({"hl": a["hl"]} if a.get("hl") else {})})
                 page.wait_for_timeout(1500)
             finally:
                 video = page.video

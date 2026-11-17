@@ -49,3 +49,22 @@ def test_existing_out_dir_refused(demo, tmp_path):
     with pytest.raises(FileExistsError):
         record_web.record_web(demo, out)
     assert (out / "keep.txt").exists()
+
+def test_build_pack_end_to_end(demo, tmp_path, monkeypatch):
+    import build_pack, pack
+    monkeypatch.setattr(pack, "FOOTAGE", tmp_path)
+    f = build_pack.build(demo)
+    p = pack.load_pack("s2", allow_pending=True)
+    assert f.is_file() and p["review"] == "pending"            # 没有打码规则 → 待人工确认
+    assert (tmp_path / "s2" / p["clip"]).is_file()
+    assert set(p["highlights"]) == {"hook", "mid"}
+    assert [x.name for x in (tmp_path / "s2").iterdir() if x.name.startswith("_rec")] == []
+
+def test_build_pack_failure_leaves_nothing(demo, tmp_path, monkeypatch):
+    import build_pack, pack
+    monkeypatch.setattr(pack, "FOOTAGE", tmp_path)
+    demo["actions"].append({"do": "wait", "target": "#never", "name": "不会出现", "timeout": 500})
+    with pytest.raises(RuntimeError):
+        build_pack.build(demo)
+    assert not (tmp_path / "s2" / "pack.json").exists()
+    assert list((tmp_path / "s2").glob("*.mp4")) == [] and list((tmp_path / "s2").glob("_rec*")) == []

@@ -42,3 +42,20 @@ def save_pack(p: dict) -> Path:
     tmp.write_text(json.dumps(p, ensure_ascii=False, indent=1), encoding="utf-8")
     tmp.replace(f)
     return f
+
+def approve(step: str) -> Path:
+    """人工看过录像、确认没有敏感信息后，把素材包标记为可用。"""
+    p = load_pack(step, allow_pending=True)
+    if p is None: raise FileNotFoundError(f"没有 {step} 的素材包")
+    p["review"] = "ok"
+    f = pack_dir(step) / "pack.json"
+    tmp = f.with_suffix(".json.tmp"); p.pop("dir", None)
+    tmp.write_text(json.dumps(p, ensure_ascii=False, indent=1), encoding="utf-8"); tmp.replace(f)
+    return f
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) == 3 and sys.argv[1] == "approve":
+        print("✓ 已标记为可用：", approve(sys.argv[2]))
+    else:
+        print("用法：python pipeline/pack.py approve s2   （人工看过录像后执行）"); sys.exit(1)

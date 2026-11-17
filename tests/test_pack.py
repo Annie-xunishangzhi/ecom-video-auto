@@ -46,3 +46,9 @@ def test_save_archives_old(fdir):
 def test_save_rejects_bad_review(fdir):
     with pytest.raises(ValueError):
         pack.save_pack(_pack(review="maybe"))
+
+def test_approve_in_place(fdir):
+    pack.save_pack(_pack(review="pending"))
+    pack.approve("s2")
+    assert pack.load_pack("s2")["review"] == "ok"
+    assert not list((fdir / "s2").glob("pack.*.json"))    # 改状态不算重录，不归档
