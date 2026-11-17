@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><title>演示工具</title>
+<style>body{font:24px sans-serif;margin:40px}#result{display:none;color:#28634C}button{font-size:24px;margin:8px}</style></head>
+<body><h1>商品资料检查（测试页）</h1><div id="shop">店铺：测试小店</div>
+<button id="demo" onclick="document.getElementById('rows').textContent='10行商品记录'">使用演示数据</button>
+<div id="rows"></div>
+<button id="run" onclick="setTimeout(()=>{document.getElementById('result').style.display='block'},1200)">开始检查</button>
+<button id="pub" onclick="document.body.dataset.published='1'">确认发布商品</button>
+<div id="result">检查完成：发现 3 个问题</div></body></html>

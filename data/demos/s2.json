@@ -1,0 +1,20 @@
+{
+ "type": "web",
+ "step": "s2",
+ "product": "商品资料整理与检查",
+ "cwd": "../商品资料检查",
+ "start": ["{python}", "launch.py", "--headless", "--port", "{port}"],
+ "viewport": [1280, 720],
+ "url": "http://127.0.0.1:{port}",
+ "wait_for": "button:has-text('载入演示数据')",
+ "actions": [
+  {"do": "wait", "value": 1.0, "name": "初始页面"},
+  {"do": "click", "target": "button:has-text('载入演示数据')", "name": "载入演示数据", "pause": 1.2},
+  {"do": "scroll", "target": "button:has-text('开始整理与检查')", "name": "滚到开始按钮", "pause": 0.8},
+  {"do": "click", "target": "button:has-text('开始整理与检查')", "name": "开始检查"},
+  {"do": "wait", "target": "button:has-text('下载整理结果 Excel')", "name": "结果出现", "pause": 0.3},
+  {"do": "scroll", "target": "[data-testid='stMetricValue']", "name": "看统计", "pause": 2.5}
+ ],
+ "measure": {"items": 10, "seconds": ["开始检查", "结果出现"]},
+ "mask": []
+}
