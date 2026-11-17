@@ -19,14 +19,25 @@ class FakeBackend:
         z = np.zeros(int(self.pad * SR), np.float32)
         write_wav(out, np.concatenate([z, 0.4 * np.sin(2 * np.pi * 300 * t), z]))
 
+def load_model():
+    """加载本机的 VoxCPM2。环境变量 VOXCPM_MODEL_DIR 指向本地模型目录时用本地模型，否则用 openbmb/VoxCPM2。
+    按 8 GB 显存的设置加载：不做编译优化，不加载降噪器。"""
+    import os
+    from voxcpm import VoxCPM
+    src = os.environ.get("VOXCPM_MODEL_DIR") or "openbmb/VoxCPM2"
+    kw = {"load_denoiser": False, "optimize": False}
+    if os.environ.get("VOXCPM_DEVICE"): kw["device"] = os.environ["VOXCPM_DEVICE"]
+    try:
+        return VoxCPM.from_pretrained(src, **kw)
+    except TypeError:                      # 旧版本没有 optimize / device 参数
+        return VoxCPM.from_pretrained(src, load_denoiser=False)
+
 class VoxCPMBackend:
     """本机 VoxCPM2。用固定的参考音频做克隆，保证每条视频是同一个声音。"""
-    def __init__(self, model_id: str = "openbmb/VoxCPM2", seed: int = 42):
-        self.model_id, self.seed, self._m = model_id, seed, None
+    def __init__(self, seed: int = 42):
+        self.seed, self._m = seed, None
     def _model(self):
-        if self._m is None:
-            from voxcpm import VoxCPM
-            self._m = VoxCPM.from_pretrained(self.model_id, load_denoiser=False)
+        if self._m is None: self._m = load_model()
         return self._m
     def say(self, text, ref_wav, ref_text, out):
         m = self._model()

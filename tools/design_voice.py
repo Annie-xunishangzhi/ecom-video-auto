@@ -15,9 +15,9 @@ def design_text() -> str:
 
 def make_candidates(voice_dir: Path = VOICE_DIR) -> list:
     import numpy as np
-    from voxcpm import VoxCPM
     from audio import write_wav
-    m = VoxCPM.from_pretrained("openbmb/VoxCPM2", load_denoiser=False)
+    from tts import load_model
+    m = load_model()
     out = voice_dir / "candidates"; out.mkdir(parents=True, exist_ok=True); files = []
     for i, seed in enumerate(SEEDS, 1):
         wav = m.generate(text=design_text(), cfg_value=2.0, inference_timesteps=10, seed=seed)
