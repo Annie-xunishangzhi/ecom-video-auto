@@ -1,5 +1,5 @@
 """屏幕录制（供 agent 在用户真实浏览器里执行 skill 时用）。只支持 Windows（ffmpeg gdigrab）。
-三个命令分别由 录屏开始.cmd / 录屏标记.cmd / 录屏结束.cmd 调用：
+备用方案（真实浏览器里的操作优先用 tools/kimi_call.py + pipeline/frames_pack.py，不需要录桌面）。agent 在本机直接运行：
   python pipeline/record_screen.py start --step s4 --product 拼多多上架 [--title 窗口标题]   （一直运行到收到结束信号）
   python pipeline/record_screen.py mark 批量填写 [--hl hook]
   python pipeline/record_screen.py stop        （结束录屏，生成待人工确认的素材包）

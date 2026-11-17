@@ -57,13 +57,27 @@ python pipeline/record_web.py data/demos/s<步骤>.json
 
 每个点击都先过安全闸（`pipeline/guard.py`），按钮文字含提交、发布、确认、支付等会被拦下。确需点击时用 `--allow "按钮文字"` 明确放行，并先问用户。
 
-**由你在用户真实浏览器里执行的 skill**（例如拼多多上架，只支持 Windows）：
-1. 写 `out/_rec/start.json`：`{"step": "s4", "product": "拼多多上架", "title": null, "mask": [{"x":0,"y":0,"w":0.25,"h":0.06}]}`。`mask` 是要打码的区域（按画面比例 0–1），覆盖店铺名、账号、客户信息。
-2. 双击（或用电脑操控双击）`录屏开始.cmd`。
-3. 按 skill 执行，每做完一步往 `out/_rec/current.marks.jsonl` 追加一行 `{"name": "批量填写", "at": <Unix 时间戳>}`（批量处理那步加 `"hl": "hook"`）。**停在提交之前。**
-4. 双击 `录屏结束.cmd`，结果在 `out/rec_log.txt`。
+**在用户已登录的浏览器里执行的 skill**（例如拼多多上架）：用 Kimi 浏览器扩展操作，自己直接运行命令，不需要用户点任何东西（本机 Kimi WebBridge 没启动会自动 start）。
 
-两种方式都会生成素材包。没有打码规则、或是真实后台录屏的素材包都是"待人工确认"：请用户看一遍录像，确认没有店铺名、账号、客户信息后运行 `python pipeline/pack.py approve s<步骤>`。待确认的素材包不会被用来出片。
+```
+python tools/kimi_call.py list_browser_tabs                      # 找到目标标签页
+python tools/kimi_call.py attach_tab '{"tabId": 123}'
+python tools/kimi_call.py snapshot                               # 读页面，拿元素引用
+python tools/kimi_call.py fill '{"selector":"@e12","value":"…"}' --mark "填写标题"
+python tools/kimi_call.py click '{"selector":"@e30"}' --label "40"   # 点击必须写 --label（按钮上的文字）
+python tools/kimi_call.py screenshot                             # 每做一两步截一张，就是录像的画面
+```
+
+- 每做完一步用 `--mark 步骤名` 打标记，批量处理那步加 `--hl hook`。**停在提交之前**：按钮文字含提交、发布、确认、保存草稿等会被安全闸拦下。
+- 做完后生成素材包（`--mask` 盖住店铺名、账号等区域，按画面比例 0–1）：
+
+```
+python pipeline/frames_pack.py --step s4 --product 拼多多上架 --mask '[{"x":0.79,"y":0,"w":0.19,"h":0.065}]'
+```
+
+- 画面里不能出现别家品牌：带品牌标识的商品图不要上传，品牌字段不填。
+
+两种方式都会生成素材包。没有打码规则、或是真实后台录的素材包都是"待人工确认"，**不要停下来等**：照常出片（实录槽位先用占位），在最后交付时一并请用户看录像。用户确认后运行 `python pipeline/pack.py approve s<步骤>`，再 `python tools/refill.py <编号>` 换成实录版。
 
 ## 3. 写剧本 `out/<编号>/script.json`
 
@@ -170,16 +184,11 @@ python research/digest.py top data/research/<日期>-douyin.json    # 看排名�
 - 声音固定为 `assets/voice/ref.wav` 这一个参考音，全片、每条视频都用它，不要换别的声音。
 - agent 听不了音频：配音和配乐的听感要请用户判断。
 
-## 在 Windows 上双击执行
+## 命令由你直接运行
 
-agent 不能在终端里打字时，用这些 `.cmd`（可用电脑操控双击），结果都写进 `out/*_log.txt`：
+本说明里的所有命令都由你（agent）在用户电脑上直接运行，结果自己读，不要让用户去点文件。用户只需要在两处出面：首次登录调研用的浏览器（`python research/collect.py douyin --login` 会弹出窗口），以及最后的成片终审。
 
-| 文件 | 作用 |
-|---|---|
-| `一键体检.cmd` | 环境体检 → `out/doctor_log.txt` |
-| `一键出片.cmd` | 出片（剧本路径写进 `out/next_script.txt`，或把剧本拖到文件上）→ `out/make_log.txt` |
-| `一键配音.cmd` | 本机 VoxCPM 合成配音 → `out/tts_log.txt` |
-| `录屏开始.cmd` / `录屏结束.cmd` | 屏幕录制（见 2b）→ `out/rec_log.txt` |
+`tools/cmd/` 里的 `.cmd` 只给不能在用户电脑上直接执行命令的远程会话备用，正常流程用不到。
 
 ## 维护
 
