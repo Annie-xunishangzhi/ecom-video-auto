@@ -1,1 +1,29 @@
-[]
+[
+ {
+  "id": "s2-sheet-errors",
+  "file": "s2-sheet-errors.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "电商运营的办公桌特写，显示器上是一张巨大的商品表格，几处单元格被红色标出，旁边散落着便利贴和计算器，白天自然光",
+  "license": "自有（模型生成）",
+  "date": "2026-11-17"
+ },
+ {
+  "id": "s4-night-desk",
+  "file": "s4-night-desk.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "深夜的电商小办公室，一张堆满商品样品、打印表格和咖啡杯的办公桌，电脑屏幕亮着密密麻麻的表单，暖色台灯，窗外是夜色",
+  "license": "自有（模型生成）",
+  "date": "2026-11-17"
+ },
+ {
+  "id": "s5-calendar",
+  "file": "s5-calendar.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "墙上一张贴满便利贴和红圈标记的月历，旁边是电商运营的电脑和手机，屏幕上是促销活动页面的色块，气氛紧张忙乱，傍晚的光线",
+  "license": "自有（模型生成）",
+  "date": "2026-11-17"
+ }
+]

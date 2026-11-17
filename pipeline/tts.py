@@ -63,5 +63,55 @@ def synthesize(segments, out_dir: Path, backend, ref_wav: Path, ref_text: str, r
                 last = str(e)
         else:
             raise TTSFailed(f"配音段 {sid} 合成失败（已重试 {retries} 次）：{last}")
+    (out_dir / "texts.json").write_text(json.dumps(dict(segments), ensure_ascii=False), encoding="utf-8")
     (out_dir / "voice.json").write_text(json.dumps(durations, ensure_ascii=False), encoding="utf-8")
     return durations
+
+ROOT = Path(__file__).resolve().parent.parent
+
+def voice_for_script(script: dict, out_dir: Path, backend_name: str = "voxcpm") -> dict:
+    """给一个剧本合成全部配音到 out_dir/voice/。backend_name: voxcpm（本机真实合成）或 fake（测试）"""
+    from compile_script import segments
+    vdir = Path(out_dir) / "voice"
+    if backend_name == "fake":
+        backend = FakeBackend(); ref = vdir / "_ref.wav"; write_wav(ref, np.zeros(4800)); ref_text = ""
+    else:
+        ref = ROOT / "assets" / "voice" / "ref.wav"; ref_txt = ROOT / "assets" / "voice" / "ref.txt"
+        if not ref.is_file() or not ref_txt.is_file():
+            raise TTSFailed("找不到参考音色 assets/voice/ref.wav：先运行 python tools/setup_tts.py，再运行 python tools/design_voice.py --auto")
+        try:
+            import voxcpm  # noqa: F401
+        except ImportError:
+            raise TTSFailed("这个 Python 环境里没有安装 voxcpm：先运行 python tools/setup_tts.py")
+        backend = VoxCPMBackend(); ref_text = ref_txt.read_text(encoding="utf-8").strip()
+    return synthesize(segments(script), vdir, backend, ref, ref_text)
+
+def reuse_voice(script: dict, out_dir: Path) -> dict:
+    """复用已合成的配音；配音文本和剧本对不上时报错"""
+    from compile_script import segments
+    vdir = Path(out_dir) / "voice"
+    try:
+        texts = json.loads((vdir / "texts.json").read_text(encoding="utf-8")); voice = json.loads((vdir / "voice.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        raise TTSFailed(f"没有可复用的配音：{vdir}")
+    want = dict(segments(script))
+    if texts != want or set(voice) != set(want) or any(not (vdir / f"{k}.wav").is_file() for k in want):
+        raise TTSFailed("已有配音与剧本不一致，请重新合成（去掉 --reuse-voice）")
+    return voice
+
+if __name__ == "__main__":
+    import argparse, sys
+    for s_ in (sys.stdout, sys.stderr):
+        try: s_.reconfigure(encoding="utf-8")
+        except Exception: pass
+    ap = argparse.ArgumentParser(description="只合成配音：python pipeline/tts.py out/<id>/script.json [更多剧本…]")
+    ap.add_argument("scripts", nargs="+"); ap.add_argument("--backend", default="voxcpm", choices=["voxcpm", "fake"])
+    a = ap.parse_args(); rc = 0
+    for f in a.scripts:
+        f = Path(f).resolve()
+        try:
+            d = voice_for_script(json.loads(f.read_text(encoding="utf-8")), f.parent, a.backend)
+            print(f"✓ {f.parent.name}：{len(d)} 段，共 {sum(d.values()):.1f} 秒")
+        except (TTSFailed, OSError, ValueError) as e:
+            print(f"✗ {f.parent.name}：{e}"); rc = 1
+    sys.exit(rc)

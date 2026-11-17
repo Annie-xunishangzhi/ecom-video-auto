@@ -1,7 +1,11 @@
 node_modules/
 __pycache__/
 .superpowers/
-out/
+out/*/voice/
+out/*/frames/
+out/*/*.mp4
+out/*/audio.wav
+out/_*/
 *.env
 .env
 .pytest_cache/

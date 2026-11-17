@@ -32,7 +32,25 @@ def pick_candidate(n: int, voice_dir: Path = VOICE_DIR) -> None:
     shutil.copyfile(src, Path(voice_dir) / "ref.wav")
     (Path(voice_dir) / "ref.txt").write_text(SAMPLE_TEXT, encoding="utf-8")
 
+def harshness(wav: Path) -> float:
+    """刺耳程度：4 kHz 以上的能量占比。越小越温润。"""
+    import numpy as np
+    from audio import SR, read_wav
+    x = read_wav(wav); X = np.abs(np.fft.rfft(x)) ** 2; f = np.fft.rfftfreq(len(x), 1 / SR)
+    return float(X[f >= 4000].sum() / (X[f >= 80].sum() or 1.0))
+
+def auto_pick(voice_dir: Path = VOICE_DIR) -> int:
+    """按测得的刺耳程度选最温润的一个候选（是测量值，不是听感）。"""
+    cands = sorted((Path(voice_dir) / "candidates").glob("c*.wav"))
+    if not cands:
+        raise FileNotFoundError(f"还没有候选音色：{Path(voice_dir) / 'candidates'}")
+    best = min(cands, key=harshness); n = int(best.stem[1:]); pick_candidate(n, voice_dir); return n
+
 if __name__ == "__main__":
+    if "--auto" in sys.argv:
+        if not list((VOICE_DIR / "candidates").glob("c*.wav")): make_candidates()
+        for f in sorted((VOICE_DIR / "candidates").glob("c*.wav")): print(f.name, "刺耳程度", round(harshness(f), 4))
+        print("已自动选定第", auto_pick(), "个候选：assets/voice/ref.wav（不满意可用 --pick N 换）"); sys.exit(0)
     if "--pick" in sys.argv:
         pick_candidate(int(sys.argv[sys.argv.index("--pick") + 1])); print("已固定音色：assets/voice/ref.wav")
     else:

@@ -32,7 +32,7 @@ def estimate_bpm(x: np.ndarray, sr: int = SR):
     first = float(phases[int(np.argmax([phase_score(p) for p in phases]))])
     return round(bpm, 2), round(first, 3)
 
-def add_track(src, mood: str, source: str, license: str, license_url: str = "", music_dir: Path = MUSIC_DIR) -> dict:
+def add_track(src, mood: str, source: str, license: str, license_url: str = "", music_dir: Path = MUSIC_DIR, attribution: str = "", title: str = "") -> dict:
     src, music_dir = Path(src), Path(music_dir)
     if mood not in MOODS: raise ValueError(f"情绪只能是：{'、'.join(MOODS)}")
     if not (source or "").strip() or not (license or "").strip(): raise ValueError("必须写明来源和授权，否则不入库")
@@ -48,7 +48,7 @@ def add_track(src, mood: str, source: str, license: str, license_url: str = "", 
                        capture_output=True, text=True)
     if r.returncode != 0: raise RuntimeError("转码失败：" + r.stderr[-200:])
     entry = {"id": tid, "file": out.name, "mood": mood, "bpm": bpm, "first_beat": first, "seconds": round(len(x) / SR, 1),
-             "title": src.stem, "source": source.strip(), "license": license.strip(), "license_url": license_url.strip()}
+             "title": title or src.stem, "source": source.strip(), "license": license.strip(), "license_url": license_url.strip(), "attribution": attribution.strip()}
     lib.append(entry)
     lib_path.write_text(json.dumps(lib, ensure_ascii=False, indent=1), encoding="utf-8")
     return entry
@@ -57,6 +57,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("file"); ap.add_argument("--mood", required=True, choices=MOODS)
     ap.add_argument("--source", required=True); ap.add_argument("--license", required=True)
-    ap.add_argument("--license-url", default=""); ap.add_argument("--music-dir", default=str(MUSIC_DIR))
+    ap.add_argument("--license-url", default=""); ap.add_argument("--attribution", default="", help="需要署名时，贴进视频简介的那一行"); ap.add_argument("--title", default=""); ap.add_argument("--music-dir", default=str(MUSIC_DIR))
     a = ap.parse_args()
-    print(json.dumps(add_track(a.file, a.mood, a.source, a.license, a.license_url, Path(a.music_dir)), ensure_ascii=False))
+    print(json.dumps(add_track(a.file, a.mood, a.source, a.license, a.license_url, Path(a.music_dir), a.attribution, a.title), ensure_ascii=False))

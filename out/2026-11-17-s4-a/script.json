@@ -1,0 +1,16 @@
+{"id":"2026-11-17-s4-a","type":"product","step":4,"angle_index":0,
+ "skill":{"provided":true,"name":"pdd-publish-assistant"},
+ "structure":"contrast-then-suspense","mid_hook":"steps","theme":"paper","mood":"upbeat",
+ "title":"一千个商品要上架，还在手动填？","tags":["#电商自动化","#拼多多运营","#商品上架","#电商运营干货"],
+ "cta":{"keyword":"上架","platform":"douyin"},
+ "images":[{"scene":0,"prompt":"深夜的电商小办公室，一张堆满商品样品、打印表格和咖啡杯的办公桌，电脑屏幕亮着密密麻麻的表单，暖色台灯，窗外是夜色","file":"s4-night-desk.jpg"}],
+ "scenes":[
+  {"type":"photo","about":"manual","vo":"一千个商品要上架，你还在一个一个手动填吗？","image":"s4-night-desk.jpg","line1":"一千个商品","line2":"还在手动填？","mascot":{"pos":"topRight","pose":"shock"}},
+  {"type":"hookContrast","about":"manual","vo":"人工填，几个人忙好几天；交给自动化，它自己填完。","line":"同样一千个商品","left":{"label":"人工上架","value":"好几天","note":"按人工耗时估算"},"right":{"label":"自动上架","value":"自己填完","note":"不用盯着"}},
+  {"type":"footage","slot":"hook","vo":"看，打开后台、进发布页，全程不用你动手。","line":"全程不用动手","timer":false},
+  {"type":"statement","vo":"标题、类目、规格、价格、库存，按资料逐项填好，填一项核一项。","kicker":"拼多多发布助手","line1":"按资料{b}逐项填","line2":"填一项{b}核一项"},
+  {"type":"steps","mid_hook":true,"hide_last":true,"vo":"想用上它只要三步，前两步很简单，最后一步最关键。","title":"用上它只要三步","items":["准备商品资料","让助手连上后台","提交前亲自确认"],"mascot":{"pos":"bottomRight","pose":"point","say":[[1.8,"最后一步最关键"]]}},
+  {"type":"footage","slot":"mid","vo":"第一步准备好商品资料，第二步让助手连上后台。","line":"前两步很简单","timer":false},
+  {"type":"reveal","payoff":true,"vo":"第三步，提交之前它会停下来，等你亲自确认。","num":"03","title":"提交前，停下等你","line":"你点头，它才提交"},
+  {"type":"cta","vo":"这个上架助手免费送，关注我，评论区发上架两个字，私信发你。","kicker":"免费领取","title":"关注我{b}{s:免费送}","foot":"私信发你","mascot":{"pos":"cta","pose":"wave","wave":true}}
+ ]}

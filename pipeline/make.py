@@ -7,7 +7,6 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
-from audio import write_wav
 from compile_script import compile_script, segments
 from footage import extract, placeholder
 from mix import mix
@@ -45,7 +44,7 @@ def _ffmpeg(args, cwd, what):
     if r.returncode != 0:
         raise Stop(f"{what}失败：{r.stderr.strip()[-300:]}")
 
-def run(script_path: Path, footage_args, backend_name: str) -> Path:
+def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False) -> Path:
     script = json.loads(script_path.read_text(encoding="utf-8"))
     vid = script["id"]; out = script_path.parent
     history_path = ROOT / "data" / "history.json"; history = load_history(history_path)
@@ -73,17 +72,9 @@ def run(script_path: Path, footage_args, backend_name: str) -> Path:
     pending = any(not f.get("n") for f in foot.values())
 
     print("3/9 配音")
-    voice_dir = ROOT / "assets" / "voice"; ref = voice_dir / "ref.wav"; ref_txt = voice_dir / "ref.txt"
-    if backend_name == "fake":
-        backend = tts.FakeBackend(); ref = out / "voice" / "_ref.wav"
-        import numpy as np; write_wav(ref, np.zeros(4800)); ref_text = ""
-    else:
-        if not ref.is_file() or not ref_txt.is_file():
-            raise Stop("找不到参考音色 assets/voice/ref.wav：先运行 python tools/setup_tts.py，再运行 python tools/design_voice.py 选定音色")
-        backend = tts.VoxCPMBackend(); ref_text = ref_txt.read_text(encoding="utf-8").strip()
     try:
-        voice = tts.synthesize(segments(script), out / "voice", backend, ref, ref_text)
-    except (tts.TTSFailed, ImportError, ModuleNotFoundError) as e:
+        voice = tts.reuse_voice(script, out) if reuse_voice else tts.voice_for_script(script, out, backend_name)
+    except tts.TTSFailed as e:
         raise Stop(f"配音失败：{e}")
 
     print("4/9 编译内容")
@@ -125,10 +116,10 @@ def run(script_path: Path, footage_args, backend_name: str) -> Path:
     used = {sc.get("image") for sc in json.loads(content.read_text(encoding="utf-8").split("window.CONTENT=")[1].split(";\nwindow.VO=")[0])["scenes"] if sc.get("image")}
     publish = {"id": vid, "title": script.get("title"), "tags": script.get("tags"), "platform": (script.get("cta") or {}).get("platform"),
                "comment_keyword": (script.get("cta") or {}).get("keyword"), "seconds": round(secs, 1),
-               "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。",
+               "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。" + ("配乐要求署名，请把 music.attribution 这一行贴进视频简介。" if track.get("attribution") else ""),
                "pending_footage": pending, "pending_note": "实录槽位目前是示意画面，对应 skill 录屏后可替换重出。" if pending else "",
                "images": [idx.get(f, {"file": f, "license": "未登记"}) for f in sorted(used)],
-               "music": {k: track.get(k) for k in ("id", "title", "source", "license", "license_url")},
+               "music": {k: track.get(k) for k in ("id", "title", "source", "license", "license_url", "attribution")},
                "files": {"video": final.name, "subtitles": f"{vid}.srt", "contact_sheet": "contact.jpg"}}
     (out / "publish.json").write_text(json.dumps(publish, ensure_ascii=False, indent=1), encoding="utf-8")
     history.append({"id": vid, "date": datetime.date.today().isoformat(), "type": script.get("type"), "step": script.get("step"),
@@ -144,9 +135,10 @@ def main(argv=None) -> int:
         except Exception: pass
     ap = argparse.ArgumentParser()
     ap.add_argument("script"); ap.add_argument("--footage", action="append"); ap.add_argument("--tts-backend", default="voxcpm", choices=["voxcpm", "fake"])
+    ap.add_argument("--reuse-voice", action="store_true", help="复用 out/<id>/voice/ 里已合成的配音")
     a = ap.parse_args(argv)
     try:
-        final = run(Path(a.script).resolve(), a.footage, a.tts_backend)
+        final = run(Path(a.script).resolve(), a.footage, a.tts_backend, a.reuse_voice)
     except Stop as e:
         print("✗", e); return 1
     print("✓ 成片：", final); return 0

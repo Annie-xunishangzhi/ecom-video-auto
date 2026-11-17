@@ -12,7 +12,7 @@ def cjk_root(tmp_path_factory):
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("node_modules", "out", ".git", ".superpowers", ".secrets", "__pycache__", ".pytest_cache", "*.m4a", "library.json", "history.json"))
     os.symlink(src/"node_modules", dst/"node_modules", target_is_directory=True)
     t = dst/"t.wav"; write_wav(t, tone(220, 20.0, 0.4))
-    r = subprocess.run([sys.executable, str(dst/"tools"/"add_track.py"), str(t), "--mood", "upbeat", "--source", "测试", "--license", "测试用"], capture_output=True, text=True)
+    r = subprocess.run([sys.executable, str(dst/"tools"/"add_track.py"), str(t), "--mood", "upbeat", "--source", "测试", "--license", "测试用", "--attribution", "测试署名"], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     return dst
 def run_make(root, script, *args, sid=None, tts="fake"):
@@ -37,7 +37,7 @@ def test_make_end_to_end_fake_tts(cjk_root, ok):
     hist = load_history(cjk_root/"data"/"history.json")
     assert len(hist) == 1 and hist[0]["id"] == "e2e-a" and hist[0]["structure"] == "contrast-then-suspense" and hist[0]["track"] == "upbeat-001" and hist[0]["has_footage"] is False
     pub = json.loads((out/"publish.json").read_text(encoding="utf-8"))
-    assert pub["pending_footage"] is True and "AI" in pub["reminder"] and pub["music"]["license"] == "测试用" and pub["tags"] == ok["tags"]
+    assert pub["pending_footage"] is True and "AI" in pub["reminder"] and pub["music"]["license"] == "测试用" and pub["music"]["attribution"] == "测试署名" and pub["tags"] == ok["tags"]
 def test_real_footage_marks_not_pending(cjk_root, ok, fx):
     ok["structure"] = "timer-race"; ok["mid_hook"] = "pitfall"      # 避开上一条用过的结构和钩子
     clip = fx/"clip.mp4"
@@ -67,3 +67,21 @@ def test_tts_unavailable_fails_cleanly(cjk_root, ok):
     r, out = run_make(cjk_root, ok, sid="bad-4", tts="voxcpm")
     assert r.returncode == 1 and ("参考音色" in r.stdout or "配音" in r.stdout) and not (out/"bad-4.mp4").exists()
     assert len(load_history(cjk_root/"data"/"history.json")) == before
+def test_voice_dir_is_reused_without_resynthesis(cjk_root, ok):
+    ok["structure"] = "pain-then-result-first"; ok["mid_hook"] = "best_feature"
+    script = dict(ok); script["id"] = "reuse-1"; d = cjk_root/"out"/"reuse-1"; d.mkdir(parents=True, exist_ok=True)
+    (d/"script.json").write_text(json.dumps(script, ensure_ascii=False), encoding="utf-8")
+    r = subprocess.run([sys.executable, str(cjk_root/"pipeline"/"tts.py"), str(d/"script.json"), "--backend", "fake"], capture_output=True, text=True, encoding="utf-8")
+    assert r.returncode == 0, r.stdout + r.stderr
+    stamp = (d/"voice"/"s01.wav").stat().st_mtime_ns
+    r = subprocess.run([sys.executable, str(cjk_root/"pipeline"/"make.py"), str(d/"script.json"), "--reuse-voice"], capture_output=True, text=True, encoding="utf-8")
+    assert r.returncode == 0, r.stdout[-800:] + r.stderr[-800:]
+    assert (d/"voice"/"s01.wav").stat().st_mtime_ns == stamp and (d/"reuse-1.mp4").exists()
+def test_reuse_voice_with_changed_script_fails(cjk_root, ok):
+    ok["structure"] = "count-up"; ok["mid_hook"] = "result_first"
+    r, out = run_make(cjk_root, ok, sid="reuse-2"); assert r.returncode == 0, r.stdout[-500:]
+    script = json.loads((out/"script.json").read_text(encoding="utf-8")); script["scenes"][2]["vo"] = "标题类目规格价格库存全部按资料自动填好并且逐项核对清楚明白。"
+    script["structure"] = "day-in-life"; script["mid_hook"] = "steps"
+    (out/"script.json").write_text(json.dumps(script, ensure_ascii=False), encoding="utf-8")
+    r = subprocess.run([sys.executable, str(cjk_root/"pipeline"/"make.py"), str(out/"script.json"), "--reuse-voice"], capture_output=True, text=True, encoding="utf-8")
+    assert r.returncode == 1 and "配音" in r.stdout and "不一致" in r.stdout

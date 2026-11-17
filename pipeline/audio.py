@@ -9,7 +9,22 @@ def read_wav(path, sr: int = SR, mono: bool = True) -> np.ndarray:
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"找不到音频文件：{path}")
-    # 一律按双声道解码，单声道时取两声道平均（ffmpeg 自带的下混会把电平抬高）
+    if path.suffix.lower() == ".wav":          # 16 位 PCM 的 WAV 直接读，不依赖 ffmpeg
+        try:
+            with wave.open(str(path), "rb") as w:
+                if w.getsampwidth() == 2 and w.getcomptype() == "NONE":
+                    ch, rate = w.getnchannels(), w.getframerate()
+                    x = np.frombuffer(w.readframes(w.getnframes()), "<i2").astype(np.float32) / 32768.0
+                    x = x.reshape(-1, ch)
+                    if rate != sr:
+                        from math import gcd
+                        from scipy.signal import resample_poly
+                        g = gcd(sr, rate); x = resample_poly(x, sr // g, rate // g, axis=0).astype(np.float32)
+                    if mono: return x.mean(axis=1)
+                    return np.repeat(x, 2, axis=1) if ch == 1 else x[:, :2].copy()
+        except wave.Error:
+            pass
+    # 其他格式按双声道解码，单声道时取两声道平均（ffmpeg 自带的下混会把电平抬高）
     r = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-ac", "2", "-ar", str(sr), "-f", "f32le", "-"],
                        capture_output=True)
     if r.returncode != 0:
