@@ -14,6 +14,7 @@ from guard import Blocked, check_action, is_dangerous
 BOX = ROOT / "out" / "_kimi"
 TRIGGER = {"click": "click", "mouse_click": "click", "send_keys": "press"}
 WRITE_JS = re.compile(r"\.click\s*\(|\.submit\s*\(|dispatchEvent|fetch\s*\(|XMLHttpRequest|sendBeacon|\.value\s*=|innerHTML\s*=|location\s*=|\.remove\s*\(", re.I)
+NAV = ["发布新商品", "确认发布该类商品"]   # 只是打开发布表单的按钮，不提交任何内容
 ALLOWED = {"list_browser_tabs", "attach_tab", "navigate", "snapshot", "find", "read_page", "fill", "click", "mouse_click",
            "upload", "wait", "send_keys", "evaluate", "screenshot", "list_tabs"}
 
@@ -73,7 +74,9 @@ def main(argv=None) -> int:
         try: s.reconfigure(encoding="utf-8")
         except Exception: pass
     ap = argparse.ArgumentParser(); ap.add_argument("--base", default="http://127.0.0.1:10086"); ap.add_argument("--allow", action="append", default=[])
+    ap.add_argument("--nav-allow", action="store_true", help="放行两个只是进入发布页的导航按钮：" + "、".join(NAV))
     a = ap.parse_args(argv)
+    if a.nav_allow: a.allow += NAV
     for d in ("req", "resp", "shots"): (BOX / d).mkdir(parents=True, exist_ok=True)
     (BOX.parent / "_rec").mkdir(parents=True, exist_ok=True)
     stop = BOX / "stop"
