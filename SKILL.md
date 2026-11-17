@@ -28,7 +28,9 @@ python tools/design_voice.py --auto   # 生成并固定"温润男孩童音"，�
 python pipeline/pick_topic.py
 ```
 
-输出这次要做的步骤、功能点和痛点。选题池是 `data/topics.json` 里的电商运营八步。
+输出这次要做的步骤、功能点和痛点。选题池是 `data/topics.json` 里的电商运营八步。加 `--hot` 时按七比三穿插热点视频（见第 8 节）。
+
+有账号数据时（见第 9 节）输出里会带 `prefer`：表现好、且近期没用过的结构和钩子写法，写剧本时优先选。
 
 ## 2. 问用户要 skill（可以跳过）
 
@@ -102,7 +104,7 @@ python pipeline/record_web.py data/demos/s<步骤>.json
 python pipeline/script_check.py out/<编号>/script.json
 ```
 
-有 ✗ 就改，直到通过。
+有 ✗ 就改，直到通过。出片时还会和近 10 条成片查重（结构、钩子、主题、配乐情绪、场景顺序、文案），太像会报出和哪一条像、像在哪里，按提示换结构或重写文案。话题标签在有 `data/tags.json` 时必须从里面这一步的词里选。
 
 ## 5. 配图
 
@@ -136,6 +138,48 @@ python tools/refill.py <编号>
    - 这是给人终审的成片，**发布时要在平台上打 AI 生成内容标识**，本 skill 不做自动发布。
    - `publish.json` 里有标题、话题标签、评论关键词，以及配图和配乐的授权记录。配乐要求署名时，把 `music.attribution` 贴进视频简介。
    - `pending_footage` 为 `true` 表示实录位置还是示意画面，skill 录屏后可以替换重出。
+
+## 8. 热点视频
+
+只做和电商、AI 相关、一周内、有可查来源的热点。用网页搜索找，写进 `data/hot.json`：
+
+```
+[{"topic": "…", "angle": "和电商人有什么关系", "source_url": "https://…", "source_date": "2026-11-15", "relevant_to": "ecommerce", "used": false}]
+```
+
+`pick_topic.py --hot` 选中热点时，剧本写 `"type": "hot"`、`"step": null`，把这条热点原样放进 `"hot"`，结构从 `data/structures.json` 里 `"for": "hot"` 的几种选。规则：最后要落到"电商自动化"上；钩子、中段悬念、结尾转化照常；只写来源里有的说法，不编数字；引用来源里的数字的场景加 `"about": "manual"`。出片后来源链接写进 `publish.json`，这条热点自动标记为用过。
+
+## 9. 爆款调研与数据反馈（定期做，不是每条都做）
+
+**调研**（需要用户先登录一次，之后小量采集公开搜索结果的文字信息，不下载视频）：
+
+```
+python research/collect.py douyin --login      # 首次：打开浏览器让用户登录
+python research/collect.py douyin              # 按选题池关键词采集，每词最多 30 条
+python research/digest.py tags data/research/<日期>-douyin.json   # 更新 data/tags.json
+python research/digest.py top data/research/<日期>-douyin.json    # 看排名靠前的标题
+```
+
+遇到验证码或登录页会立刻停下，请用户处理。采集到 0 条会报错（页面变了），不要当成"没有爆款"。读完排名靠前的标题后，可以把新的结构或钩子写法写进 `data/research/proposals.json`（每条带 `"kind": "structure"|"hook"`），**请用户确认、把 `approved` 改成 `true` 后**再运行 `python research/digest.py merge`。
+
+**数据反馈**：用户把每条视频的播放、完播率、点赞、收藏、涨粉填进 `data/metrics.csv`（第一行是表头），然后 `python tools/report.py` 看各结构、钩子、主题、标签的平均表现。样本不足 3 条的不下结论。
+
+## 配乐与声音
+
+- 配乐默认由代码原创编曲（`--music compose`）：按剧本段落编排，用 GeneralUser GS 音色库的真实乐器采样渲染，每条视频的调性、和弦、乐器组都不同，不需要署名。`--music library` 改用曲库。
+- 声音固定为 `assets/voice/ref.wav` 这一个参考音，全片、每条视频都用它，不要换别的声音。
+- agent 听不了音频：配音和配乐的听感要请用户判断。
+
+## 在 Windows 上双击执行
+
+agent 不能在终端里打字时，用这些 `.cmd`（可用电脑操控双击），结果都写进 `out/*_log.txt`：
+
+| 文件 | 作用 |
+|---|---|
+| `一键体检.cmd` | 环境体检 → `out/doctor_log.txt` |
+| `一键出片.cmd` | 出片（剧本路径写进 `out/next_script.txt`，或把剧本拖到文件上）→ `out/make_log.txt` |
+| `一键配音.cmd` | 本机 VoxCPM 合成配音 → `out/tts_log.txt` |
+| `录屏开始.cmd` / `录屏结束.cmd` | 屏幕录制（见 2b）→ `out/rec_log.txt` |
 
 ## 维护
 

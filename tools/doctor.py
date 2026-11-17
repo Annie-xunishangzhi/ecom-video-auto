@@ -18,6 +18,10 @@ def checks():
     yield ("✗" if missing else "✓"), "Python 依赖", "运行：python -m pip install -r requirements.txt"
     pw = bool(shutil.which("node")) and _node_has("playwright")
     yield ("✓" if pw else "✗"), "Playwright", "在工程根目录运行：npm install，然后 npx playwright install chromium"
+    pypw = importlib.util.find_spec("playwright") is not None
+    yield ("✓" if pypw else "!"), "Python 版 Playwright（录网页工具、爆款采集）", "运行：python -m pip install playwright，然后 python -m playwright install chromium"
+    sf = (ROOT / "assets" / "soundfont" / "GeneralUser-GS.sf2").is_file() and importlib.util.find_spec("tinysoundfont") is not None
+    yield ("✓" if sf else "!"), "原创编曲（SoundFont 音色）", "运行：python -m pip install --no-deps tinysoundfont；音色库应在 assets/soundfont/"
     ref = (ROOT / "assets" / "voice" / "ref.wav").is_file(); vox = importlib.util.find_spec("voxcpm") is not None
     yield ("✓" if ref and vox else "!"), "配音（VoxCPM + 固定音色）", "运行：python tools/setup_tts.py，再运行 python tools/design_voice.py --auto"
     lib = ROOT / "assets" / "music" / "library.json"
