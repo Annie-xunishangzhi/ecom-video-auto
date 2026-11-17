@@ -15,3 +15,4 @@ out/*.txt
 out/*.zip
 out/*.tgz
 out/成片/*.mp4
+docs/*.bundle
