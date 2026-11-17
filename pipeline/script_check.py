@@ -67,6 +67,16 @@ def measured_problems(script: dict, measured) -> list:
                 P.append(f"第 {i+1} 个场景的“{raw}”和素材包实测值不一致（数量 {items}，耗时 {secs} 秒）")
     return P
 
+def tag_problems(script: dict, path: Path) -> list:
+    """话题标签须来自 data/tags.json 里这一步的词（加通用标签）；文件不存在时跳过。"""
+    try: d = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError): return []
+    step = d.get(str(script.get("step")))
+    if not step: return []
+    allowed = set(d.get("common") or []) | {t for v in step.values() for t in v}
+    bad = [t for t in script.get("tags") or [] if t not in allowed]
+    return [f"话题标签不在调研词库（data/tags.json 第 {script.get('step')} 步）里：{'、'.join(bad)}"] if bad else []
+
 def check(script: dict, history: list, measured=None) -> list:
     P = []
     scenes = script.get("scenes") or []
@@ -109,6 +119,7 @@ def check(script: dict, history: list, measured=None) -> list:
     foot = sum(scene_seconds(s) for s in scenes if s.get("type") == "footage")
     if foot > total / 3: P.append(f"录屏约 {foot:.0f} 秒，超过全片三分之一")
     if not 3 <= len(script.get("tags") or []) <= 5: P.append("话题标签应为 3–5 个")
+    P += tag_problems(script, ROOT / "data" / "tags.json")
     # 与近期成片不重复
     if script.get("structure") in [h.get("structure") for h in history[-5:]]: P.append("这个结构近 5 条里用过，换一个结构")
     if script.get("mid_hook") in [h.get("mid_hook") for h in history[-3:]]: P.append("这种中段钩子写法近 3 条里用过，换一种钩子")
