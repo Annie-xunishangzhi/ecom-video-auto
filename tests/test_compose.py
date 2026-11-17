@@ -9,6 +9,14 @@ def rms(x, a, b): return float(np.sqrt((x[int(a*SR):int(b*SR)]**2).mean()))
 
 def test_length_is_exact_and_stereo():
     x = compose(TL, SEC, "upbeat", seed=1); assert x.shape == (int(24.0*SR), 2)
+def test_soundfont_in_unicode_directory_renders_audio(tmp_path, monkeypatch):
+    import compose as compose_module
+    font = tmp_path / "中文音色" / "乐器.sf2"
+    font.parent.mkdir()
+    font.write_bytes(compose_module.SOUNDFONT.read_bytes())
+    monkeypatch.setattr(compose_module, "SOUNDFONT", font)
+    x = compose({"dur": 1.0, "cuts": []}, [(0, 1.0, "hook")], "warm", seed=1)
+    assert x.shape == (SR, 2) and np.isfinite(x).all() and np.abs(x).max() > 0.01
 def test_same_seed_same_music():
     assert np.array_equal(compose(TL, SEC, "upbeat", seed=3), compose(TL, SEC, "upbeat", seed=3))
 def test_different_seed_different_music():

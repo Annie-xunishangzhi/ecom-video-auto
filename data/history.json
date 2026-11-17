@@ -82,5 +82,17 @@
   "theme": "dusk",
   "track": "composed-46689",
   "has_footage": false
+ },
+ {
+  "id": "2026-11-17-s7-a",
+  "date": "2026-11-17",
+  "type": "product",
+  "step": 7,
+  "angle_index": 0,
+  "structure": "pain-then-result-first",
+  "mid_hook": "best_feature",
+  "theme": "ink",
+  "track": "composed-46419",
+  "has_footage": false
  }
 ]

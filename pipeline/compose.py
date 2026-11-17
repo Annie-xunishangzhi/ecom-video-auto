@@ -156,7 +156,8 @@ def _render(events, plan, dur):
     if not SOUNDFONT.is_file():
         raise FileNotFoundError(f"缺少音色库：{SOUNDFONT}")
     pal = MOODS[plan["mood"]]["palettes"][plan["palette"]]
-    syn = tinysoundfont.Synth(samplerate=SR); sf = syn.sfload(str(SOUNDFONT))
+    # 由 Python 读取字节，避开 Windows 底层库不支持中文文件路径的问题。
+    syn = tinysoundfont.Synth(samplerate=SR); sf = syn.sfload(SOUNDFONT.read_bytes())
     for ch, prog in ((0, pal["keys"]), (1, pal["bass"]), (2, pal["lead"]), (3, pal["pad"])):
         syn.program_select(ch, sf, 0, prog)
     try: syn.program_select(9, sf, 128, pal["kit"], True)
