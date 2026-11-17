@@ -39,7 +39,35 @@ def _texts(obj):
     elif isinstance(obj, (list, tuple)):
         for v in obj: yield from _texts(v)
 
-def check(script: dict, history: list) -> list:
+_NUM = re.compile(r"(\d+(?:\.\d+)?)\s*(分半|分钟|分|秒|小时)?")
+
+def measured_problems(script: dict, measured) -> list:
+    """标了 measured: true 的场景，里面的数字必须和素材包实测值一致（数量；秒数或换算后的分钟）。"""
+    ms = [(i, s) for i, s in enumerate(script.get("scenes") or []) if s.get("measured")]
+    if not ms: return []
+    if not measured:
+        return [f"第 {ms[0][0]+1} 个场景写了实测数字，但这一步没有可用的素材包（先录屏并确认素材包）"]
+    items, secs = measured.get("items"), measured.get("seconds")
+    P = []
+    for i, s in ms:
+        nums = []
+        for t in _texts(s):
+            for m in _NUM.finditer(t):
+                v, u = float(m.group(1)), m.group(2) or ""
+                if u == "分半": v, u = v + 0.5, "分钟"
+                nums.append((v, u, m.group(0)))
+        for k in ("to", "seconds"):
+            if isinstance(s.get(k), (int, float)) and s[k]: nums.append((float(s[k]), "秒" if k == "seconds" else "", f"{k}={s[k]}"))
+        for v, u, raw in nums:
+            if u == "秒": ok = secs is not None and abs(v - secs) <= max(0.5, secs * 0.05)
+            elif u in ("分钟", "分"): ok = secs is not None and abs(v - secs / 60) <= max(0.05, secs / 60 * 0.05)
+            elif u == "小时": ok = secs is not None and abs(v - secs / 3600) <= 0.05
+            else: ok = items is not None and v == items
+            if not ok:
+                P.append(f"第 {i+1} 个场景的“{raw}”和素材包实测值不一致（数量 {items}，耗时 {secs} 秒）")
+    return P
+
+def check(script: dict, history: list, measured=None) -> list:
     P = []
     scenes = script.get("scenes") or []
     if not scenes:
@@ -84,6 +112,8 @@ def check(script: dict, history: list) -> list:
     # 与近期成片不重复
     if script.get("structure") in [h.get("structure") for h in history[-5:]]: P.append("这个结构近 5 条里用过，换一个结构")
     if script.get("mid_hook") in [h.get("mid_hook") for h in history[-3:]]: P.append("这种中段钩子写法近 3 条里用过，换一种钩子")
+    # 实测数字
+    P += measured_problems(script, measured)
     # skill 未输入时的规则
     if not (script.get("skill") or {}).get("provided"):
         if "实测" in everything: P.append("skill 未输入，不能出现“实测”")

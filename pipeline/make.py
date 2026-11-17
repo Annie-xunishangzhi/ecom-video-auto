@@ -1,5 +1,6 @@
 """一键出片：剧本检查 → 实录抽帧/占位 → 配音 → 编译 → 抽帧检查 → 渲染 → 时长复查 → 选曲混音 → 合成 → 发布信息 → 记入历史。
-用法：python pipeline/make.py out/<id>/script.json [--footage hook=<视频>:<起点秒>:<时长秒>[:<倍速>]] [--footage mid=…] [--tts-backend voxcpm|fake]
+用法：python pipeline/make.py out/<id>/script.json [--footage hook=<视频>:<起点秒>:<时长秒>[:<倍速>]] [--footage mid=…] [--footage auto] [--tts-backend voxcpm|fake]
+--footage auto：用 assets/footage/s<步骤>/pack.json 素材包的高光片段；没有可用素材包时用示意占位。
 任何一步失败都不记入历史。"""
 import argparse, datetime, json, os, subprocess, sys
 from pathlib import Path
@@ -10,6 +11,7 @@ sys.path.insert(0, str(HERE))
 from compile_script import compile_script, segments
 from footage import extract, placeholder
 from mix import mix
+from pack import load_pack
 from music_pick import pick as pick_track
 from pick_topic import load_history
 from script_check import MAX_S, MIN_S, CPS, check
@@ -18,7 +20,8 @@ import tts
 class Stop(Exception):
     pass
 
-def _parse_footage(args) -> dict:
+def _parse_footage(args):
+    if args == ["auto"]: return "auto"
     out = {}
     for a in args or []:
         slot, _, rest = a.partition("=")
@@ -29,9 +32,31 @@ def _parse_footage(args) -> dict:
                 parts = rest.rsplit(":", 2); clip, start, dur, speed = parts[0], float(parts[1]), float(parts[2]), 4.0
         except (ValueError, IndexError):
             raise Stop(f"--footage 写法不对：{a}（应为 槽位=视频路径:起点秒:时长秒[:倍速]）")
+        if a == "auto": raise Stop("--footage auto 不能和具体槽位写法混用")
         if slot not in ("hook", "mid"): raise Stop(f"实录槽位只能是 hook 或 mid：{slot}")
         out[slot] = (Path(clip), start, dur, speed)
     return out
+
+def step_id(script: dict) -> str:
+    return f"s{script.get('step')}"
+
+def footage_slots(script: dict, wanted, out: Path) -> dict:
+    """wanted 是 _parse_footage 的结果：'auto' 时用这一步的素材包（没有或待确认就占位）。"""
+    if wanted == "auto":
+        p = load_pack(step_id(script)) if script.get("step") is not None else None
+        wanted = {}
+        if p:
+            for slot, h in (p.get("highlights") or {}).items():
+                wanted[slot] = (Path(p["dir"]) / p["clip"], float(h["start"]), float(h["dur"]), float(h.get("speed", 1)))
+    foot = {}
+    for slot in {sc.get("slot") for sc in script["scenes"] if sc["type"] == "footage"}:
+        if slot in (wanted or {}):
+            clip, start, dur, speed = wanted[slot]
+            try: foot[slot] = extract(clip, Path(out) / "frames" / slot, start, dur, speed)
+            except (FileNotFoundError, ValueError, RuntimeError) as e: raise Stop(str(e))
+        else:
+            foot[slot] = placeholder()
+    return foot
 
 def _node(script_name: str, content: Path, out: Path, what: str):
     r = subprocess.run(["node", str(HERE / script_name)], env={**os.environ, "CONTENT": str(content), "OUT_DIR": str(out)},
@@ -44,7 +69,8 @@ def _ffmpeg(args, cwd, what):
     if r.returncode != 0:
         raise Stop(f"{what}失败：{r.stderr.strip()[-300:]}")
 
-def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False, music_mode: str = "compose") -> Path:
+def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False, music_mode: str = "compose", check_history=None) -> Path:
+    """check_history：剧本检查时拿来比对“近 N 条不重复”的历史；重出旧片时传它原来位置之前的历史。"""
     script = json.loads(script_path.read_text(encoding="utf-8"))
     vid = script["id"]; out = script_path.parent
     history_path = ROOT / "data" / "history.json"; history = load_history(history_path)
@@ -52,7 +78,8 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
     if final.exists(): final.unlink()
 
     print("1/9 剧本检查")
-    probs = check(script, history)
+    p = load_pack(step_id(script)) if script.get("step") is not None else None
+    probs = check(script, history if check_history is None else check_history, measured=(p or {}).get("measured"))
     if probs:
         raise Stop("剧本检查没通过：\n" + "\n".join("  ✗ " + p for p in probs))
     for i, sc in enumerate(script["scenes"]):
@@ -61,14 +88,7 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
             raise Stop(f"第 {i+1} 个场景的配图不存在：{img}（先用 tools/gen_image.py 生成）")
 
     print("2/9 实录槽位")
-    wanted = _parse_footage(footage_args); foot = {}
-    for slot in {sc.get("slot") for sc in script["scenes"] if sc["type"] == "footage"}:
-        if slot in wanted:
-            clip, start, dur, speed = wanted[slot]
-            try: foot[slot] = extract(clip, out / "frames" / slot, start, dur, speed)
-            except (FileNotFoundError, ValueError, RuntimeError) as e: raise Stop(str(e))
-        else:
-            foot[slot] = placeholder()
+    foot = footage_slots(script, _parse_footage(footage_args), out)
     pending = any(not f.get("n") for f in foot.values())
 
     print("3/9 配音")
