@@ -1,4 +1,4 @@
-"""一键出片：剧本检查 → 实录抽帧/占位 → 配音 → 编译 → 抽帧检查 → 渲染 → 时长复查 → 选曲混音 → 合成 → 发布信息 → 记入历史。
+"""一键出片：剧本检查与查重 → 实录抽帧/占位 → 配音 → 编译 → 抽帧检查 → 渲染 → 时长复查 → 选曲混音 → 合成 → 发布信息 → 记入历史。
 用法：python pipeline/make.py out/<id>/script.json [--footage hook=<视频>:<起点秒>:<时长秒>[:<倍速>]] [--footage mid=…] [--footage auto] [--tts-backend voxcpm|fake]
 --footage auto：用 assets/footage/s<步骤>/pack.json 素材包的高光片段；没有可用素材包时用示意占位。
 任何一步失败都不记入历史。"""
@@ -80,6 +80,9 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
     print("1/9 剧本检查")
     p = load_pack(step_id(script)) if script.get("step") is not None else None
     probs = check(script, history if check_history is None else check_history, measured=(p or {}).get("measured"))
+    import dedupe
+    hist_for_dup = history if check_history is None else check_history
+    probs += dedupe.check(script, dedupe.load_history_scripts(hist_for_dup, ROOT / "out", exclude=vid))
     if probs:
         raise Stop("剧本检查没通过：\n" + "\n".join("  ✗ " + p for p in probs))
     for i, sc in enumerate(script["scenes"]):
