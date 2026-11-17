@@ -150,7 +150,8 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
     publish = {"id": vid, "title": script.get("title"), "tags": script.get("tags"), "platform": (script.get("cta") or {}).get("platform"),
                "comment_keyword": (script.get("cta") or {}).get("keyword"), "seconds": round(secs, 1),
                "reminder": "发布前请人工看一遍成片，并在平台上打 AI 生成内容标识。" + ("配乐要求署名，请把 music.attribution 这一行贴进视频简介。" if track.get("attribution") else ""),
-               "pending_footage": pending, "pending_note": "实录槽位目前是示意画面，对应 skill 录屏后可替换重出。" if pending else "",
+               "pending_footage": pending if script.get("type") != "hot" else False,
+               **({"source": {k: (script.get("hot") or {}).get(k) for k in ("topic", "source_url", "source_date")}} if script.get("type") == "hot" else {}), "pending_note": "实录槽位目前是示意画面，对应 skill 录屏后可替换重出。" if pending else "",
                "images": [idx.get(f, {"file": f, "license": "未登记"}) for f in sorted(used)],
                "music": {k: track.get(k) for k in ("id", "title", "source", "license", "license_url", "attribution")},
                "files": {"video": final.name, "subtitles": f"{vid}.srt", "contact_sheet": "contact.jpg"}}
@@ -160,7 +161,15 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
                     "theme": script.get("theme"), "track": track["id"], "has_footage": not pending})
     history_path.parent.mkdir(parents=True, exist_ok=True)
     history_path.write_text(json.dumps(history, ensure_ascii=False, indent=1), encoding="utf-8")
+    if script.get("type") == "hot": mark_hot_used((script.get("hot") or {}).get("source_url"))
     return final
+
+def mark_hot_used(url, path: Path = ROOT / "data" / "hot.json") -> None:
+    try: items = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError): return
+    for h in items:
+        if h.get("source_url") == url: h["used"] = True
+    Path(path).write_text(json.dumps(items, ensure_ascii=False, indent=1), encoding="utf-8")
 
 def main(argv=None) -> int:
     for s in (sys.stdout, sys.stderr):

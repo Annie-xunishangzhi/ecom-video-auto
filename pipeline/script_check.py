@@ -125,6 +125,12 @@ def check(script: dict, history: list, measured=None) -> list:
     if script.get("mid_hook") in [h.get("mid_hook") for h in history[-3:]]: P.append("这种中段钩子写法近 3 条里用过，换一种钩子")
     # 实测数字
     P += measured_problems(script, measured)
+    # 热点视频
+    if script.get("type") == "hot":
+        h = script.get("hot") or {}
+        if not str(h.get("source_url") or "").startswith(("http://", "https://")): P.append("热点视频必须写明可查的来源链接（hot.source_url）")
+        if h.get("relevant_to") not in ("ecommerce", "ai"): P.append("热点必须和电商或 AI 相关（hot.relevant_to 为 ecommerce 或 ai）")
+        if "电商自动化" not in everything: P.append("热点视频最后要落到“电商自动化”上（配音或画面里要出现这几个字）")
     # skill 未输入时的规则
     if not (script.get("skill") or {}).get("provided"):
         if "实测" in everything: P.append("skill 未输入，不能出现“实测”")

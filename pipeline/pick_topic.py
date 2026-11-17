@@ -1,5 +1,5 @@
 """自动选题：从八步选题池里挑最久没做过的一步；按七比三穿插热点视频。"""
-import json, sys
+import datetime, json, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -12,13 +12,28 @@ def load_history(path: Path) -> list:
         return []
     return data if isinstance(data, list) else []
 
-def pick(topics: list, history: list, hot_enabled: bool = False) -> dict:
+HOT_SHARE = 0.3
+HOT_DAYS = 7
+
+def valid_hot(h: dict, today: datetime.date = None) -> bool:
+    """热点要：有题目、可查的来源链接、一周内的来源日期、和电商或 AI 相关、没用过。"""
+    today = today or datetime.date.today()
+    try: d = datetime.date.fromisoformat(str(h.get("source_date")))
+    except ValueError: return False
+    return (bool((h.get("topic") or "").strip()) and str(h.get("source_url") or "").startswith(("http://", "https://"))
+            and 0 <= (today - d).days <= HOT_DAYS and h.get("relevant_to") in ("ecommerce", "ai") and not h.get("used"))
+
+def pick(topics: list, history: list, hot_enabled: bool = False, hot_items=None, today: datetime.date = None) -> dict:
+    """hot_items 为 None 时只看配额（旧用法）；给了列表时还要有可用的热点才出热点。"""
     recent = history[-10:]
     if hot_enabled:
         hot = sum(1 for h in recent if h.get("type") == "hot")
-        product = sum(1 for h in recent if h.get("type") == "product")
-        if hot < 3 and product >= 7:
-            return {"type": "hot", "step": None, "angle_index": 0}
+        if (hot + 1) / (len(recent) + 1) <= HOT_SHARE:
+            if hot_items is None:
+                return {"type": "hot", "step": None, "angle_index": 0}
+            ok = [h for h in hot_items if valid_hot(h, today)]
+            if ok:
+                return {"type": "hot", "step": None, "angle_index": 0, "hot": ok[0]}
     last_seen, last_angle = {}, {}
     for i, h in enumerate(history):
         if h.get("type") == "product" and h.get("step") is not None:
@@ -32,7 +47,9 @@ def pick(topics: list, history: list, hot_enabled: bool = False) -> dict:
 
 if __name__ == "__main__":
     topics = json.loads((ROOT / "data" / "topics.json").read_text(encoding="utf-8"))
-    r = pick(topics, load_history(ROOT / "data" / "history.json"), hot_enabled="--hot" in sys.argv)
+    hot_f = ROOT / "data" / "hot.json"
+    hot_items = json.loads(hot_f.read_text(encoding="utf-8")) if hot_f.is_file() else []
+    r = pick(topics, load_history(ROOT / "data" / "history.json"), hot_enabled="--hot" in sys.argv, hot_items=hot_items)
     if r["step"]:
         t = next(t for t in topics if t["step"] == r["step"])
         r.update(name=t["name"], point=t["points"][r["angle_index"] % len(t["points"])], pain=t["pain"])

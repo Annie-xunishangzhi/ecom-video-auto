@@ -1,8 +1,114 @@
 [
- {"id":"contrast-then-suspense","desc":"前后对比开场，中段抛悬念，结尾揭晓并转化","scene_types":["hookContrast","footage","statement","steps","footage","reveal","cta"]},
- {"id":"pain-then-result-first","desc":"先给结果，再回头讲痛点和做法","scene_types":["footage","counter","photo","bars","reveal","cta"]},
- {"id":"question-then-pitfall","desc":"用提问开场，中段讲最容易踩的坑","scene_types":["photo","statement","timer","steps","reveal","cta"]},
- {"id":"timer-race","desc":"人工和自动化计时对比","scene_types":["timer","hookContrast","footage","bars","reveal","cta"]},
- {"id":"count-up","desc":"用数量滚动表现批量处理","scene_types":["counter","photo","statement","footage","steps","reveal","cta"]},
- {"id":"day-in-life","desc":"一天的工作场景切入","scene_types":["photo","hookContrast","footage","statement","reveal","cta"]}
+ {
+  "id": "contrast-then-suspense",
+  "desc": "前后对比开场，中段抛悬念，结尾揭晓并转化",
+  "scene_types": [
+   "hookContrast",
+   "footage",
+   "statement",
+   "steps",
+   "footage",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "pain-then-result-first",
+  "desc": "先给结果，再回头讲痛点和做法",
+  "scene_types": [
+   "footage",
+   "counter",
+   "photo",
+   "bars",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "question-then-pitfall",
+  "desc": "用提问开场，中段讲最容易踩的坑",
+  "scene_types": [
+   "photo",
+   "statement",
+   "timer",
+   "steps",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "timer-race",
+  "desc": "人工和自动化计时对比",
+  "scene_types": [
+   "timer",
+   "hookContrast",
+   "footage",
+   "bars",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "count-up",
+  "desc": "用数量滚动表现批量处理",
+  "scene_types": [
+   "counter",
+   "photo",
+   "statement",
+   "footage",
+   "steps",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "day-in-life",
+  "desc": "一天的工作场景切入",
+  "scene_types": [
+   "photo",
+   "hookContrast",
+   "footage",
+   "statement",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "hot-news-then-angle",
+  "for": "hot",
+  "desc": "一句话讲清热点（配图加大字，注明来源），中段抛“这对电商人意味着什么”，结尾落到电商自动化并转化",
+  "scene_types": [
+   "photo",
+   "statement",
+   "bars",
+   "statement",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "hot-myth-check",
+  "for": "hot",
+  "desc": "先摆出热点里流传的说法，中段悬念“哪一点是真的”，按来源核对后揭晓，再落到电商自动化",
+  "scene_types": [
+   "statement",
+   "photo",
+   "steps",
+   "reveal",
+   "cta"
+  ]
+ },
+ {
+  "id": "hot-before-after",
+  "for": "hot",
+  "desc": "热点事件前后的对比开场，中段讲电商人该怎么接，结尾转化",
+  "scene_types": [
+   "hookContrast",
+   "photo",
+   "statement",
+   "steps",
+   "reveal",
+   "cta"
+  ]
+ }
 ]
