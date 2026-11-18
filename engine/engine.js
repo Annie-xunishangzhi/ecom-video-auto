@@ -113,9 +113,23 @@ const TYPES={
 /* ---------- 搭建 ---------- */
 Object.assign(TYPES,(window.EXTRA_TYPES?window.EXTRA_TYPES({$,cl,pr,eo,eb,rise,pop,fmt,plain,W,C,TYPES}):{}));
 for(const k in TYPES)if(!TYPES[k])delete TYPES[k];
-const SC=C.scenes.slice();if(C.outro&&TYPES.outro)SC.push({type:'outro',mascot:{pos:'big',pose:'wave',wave:true,in:0.45}});const T=[0];
-SC.forEach((sc,i)=>{const ty=TYPES[sc.type];if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=sc._vo?Math.max(sc.dur||0,2.0,sc._lead+sc._vo+sc._tail):(sc.dur||ty.dur);/* 有配音时按配音长度走，避免画面停住没人说话 */sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
-document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};--scbg:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TYPES[sc.type].build(sc,'s'+i+'_')}</div>`).join(''));
+/* 交给画面代码的工具：MO 动效库、fmt 行内标记、安全区（关键内容放在 top–bottom 之间，bottom 以下是字幕条和平台界面） */
+const HX={$,cl,pr,eo,eb,rise,pop,fmt,plain,W,H:1920,SAFE:{top:150,bottom:1460,left:60,right:1020},C,MO:window.MO,BRAND:window.BRAND,BRAND_LOGO:window.BRAND_LOGO,img:f=>'../assets/images/'+f,
+ /* 配音对齐：这个词在本场景里大约第几秒开始说（按字数比例估算，和字幕同一算法；找不到返回 null） */
+ at:(sc,word)=>{const v=String(sc.vo||'');const k=v.indexOf(word);if(k<0||!sc._vo)return null;const sp=x=>x.replace(/[，。！？、；：,.!?;:\s「」“”"]/g,'').length;
+  return +(sc._lead+sc._vo*sp(v.slice(0,k))/Math.max(1,sp(v))).toFixed(3)},
+ /* 实录帧：footage 场景有素材包时，返回 t 时刻那一帧（Image，按 30 帧/秒，播完停在最后一帧）；没有实录返回 null，画面要显示"示意"占位 */
+ frame:(sc,t)=>sc._imgs&&sc.n>0?sc._imgs[Math.min(sc.n-1,Math.max(0,Math.floor(t*30)))]:null,
+ /* 把一帧按 cover 方式画进 canvas 的 (x,y,w,h) */
+ drawFrame:(g,im,x,y,w,h)=>{if(!im)return;const k=Math.max(w/im.width,h/im.height);const dw=im.width*k,dh=im.height*k;g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.drawImage(im,x+(w-dw)/2,y+(h-dh)/2,dw,dh);g.restore()}};
+const VIS=window.VISUALS||{};
+const SC=C.scenes.slice();if(C.outro&&(VIS.outro||TYPES.outro))SC.push({type:'outro',visual:VIS.outro?'outro':undefined,mascot:C.outroMascot===false?undefined:{pos:'big',pose:'wave',wave:true,in:0.45}});const T=[0];
+/* 场景的画面：剧本里写了 visual 就用这条视频自己的画面代码（out/<编号>/visual.js），否则用兜底场景库 */
+const TY=sc=>sc._ty;
+SC.forEach((sc,i)=>{if(sc.visual&&!VIS[sc.visual])throw new Error('画面代码里没有场景 '+sc.visual+'（检查 visual.js 的 window.VISUALS）');
+ sc._ty=sc.visual?VIS[sc.visual]:TYPES[sc.type];sc._custom=!!sc.visual;const ty=sc._ty;if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=sc._vo?Math.max(sc.dur||0,2.0,sc._lead+sc._vo+sc._tail):(sc.dur||ty.dur);/* 有配音时按配音长度走，避免画面停住没人说话 */sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
+document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};--scbg:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TY(sc).build(sc,'s'+i+'_',HX)}</div>`).join(''));
+SC.forEach((sc,i)=>{if(TY(sc).init)TY(sc).init(sc,'s'+i+'_',HX)});
 
 /* ---------- 吉祥物 ---------- */
 const M=C.mascot||null;
@@ -142,7 +156,8 @@ function hop(lt,h0,H=70){const u=lt-h0;if(u<0||u>0.6)return{y:0,sx:1,sy:1};
 function mascot(i,lt){
  if(!M)return;const el=$('mascot'),m=MP[i],bub=$('bub');
  if(!m||lt<m.in){el.style.display='none';bub.style.display='none';return}
- el.style.display='block';el.style.width=el.style.height=m.S+'px';el.style.left=m.x+'px';el.style.top=(m.f-FEET*m.S)+'px';
+ let mx=m.x,mf=m.f,mS=m.S;if(m.move&&window.MO){const v=MO.kf(lt,m.move.map(k=>[k[0],[k[1],k[2],k[3]??m.S],k[4]||'inOutC']));mx=v[0];mf=v[1];mS=v[2]}
+ el.style.display='block';el.style.width=el.style.height=mS+'px';el.style.left=mx+'px';el.style.top=(mf-FEET*mS)+'px';
  const tt=lt-m.in;const p=pr(tt,0,0.5);const e=eb(p);
  let cur=m.pz[0];m.pz.forEach(q=>{if(lt>=q[0])cur=q});let pose=cur[1];const since=cur[0]>0?lt-cur[0]:99;
  let y=(1-e)*m.S*0.5,x=0,rot=(1-e)*-8;let sx=1+0.10*Math.sin(p*Math.PI)*(1-p),sy=1-0.10*Math.sin(p*Math.PI)*(1-p);
@@ -172,15 +187,18 @@ function mascot(i,lt){
 function seek(t){
  let i=T.findIndex((b,k)=>k<SC.length&&t>=b&&t<T[k+1]);if(i<0)i=SC.length-1;
  SC.forEach((sc,k)=>$('sc'+k).style.display=k===i?'block':'none');
- const lt=t-T[i];TYPES[SC[i].type].anim(SC[i],'s'+i+'_',lt);mascot(i,lt);
+ const lt=t-T[i];const el=$('sc'+i);
+ TY(SC[i]).anim(SC[i],'s'+i+'_',lt,Object.assign(HX,{dur:SC[i]._dur,T:t,i}));
+ if(!SC[i]._custom&&window.MO&&SC[i].type!=='outro')MO.camera(el,lt,SC[i]._dur,{push:0.05,drift:7,rot:0.3,seed:i*13+1}); /* 兜底场景也不许整段不动 */
+ mascot(i,lt);
  const w=$('wipe');
  if(i>0&&lt<0.35){const p=eo(lt/0.35);w.style.display='block';const bg=BGS[SC[i-1]._bg]||SC[i-1]._bg;const tr=(window.TRANSITIONS||{})[SC[i].tr||P.transition];
-  if(tr)tr(w,p,bg);else{w.style.background=bg;w.style.transform=`translateY(${-p*100}%)`}}else w.style.display='none';
+  if(SC[i].tr==='none'||(SC[i]._custom&&!SC[i].tr))w.style.display='none'; /* 自写画面自己管入场，不叠引擎的色块转场 */else if(tr)tr(w,p,bg,lt);else{w.style.background=bg;w.style.transform=`translateY(${-p*100}%)`}}else w.style.display='none';
  caption(t);
  document.body.style.opacity=1-pr(t,T.at(-1)-0.6,T.at(-1));
 }
 // 给配乐用的时间线：转场点 + 音效点
-const sfx=[];SC.forEach((sc,i)=>{(TYPES[sc.type].sfx?.(sc)||[]).forEach(([a,k])=>sfx.push([+(T[i]+a).toFixed(3),k]));const m=MP[i];if(m){(m.hop||[]).forEach(h=>sfx.push([T[i]+h,'pop']));if(m.startle!==undefined)sfx.push([T[i]+m.startle,'pop'])}});
+const sfx=[];SC.forEach((sc,i)=>{(TY(sc).sfx?.(sc)||[]).forEach(([a,k])=>sfx.push([+(T[i]+a).toFixed(3),k]));const m=MP[i];if(m){(m.hop||[]).forEach(h=>sfx.push([T[i]+h,'pop']));if(m.startle!==undefined)sfx.push([T[i]+m.startle,'pop'])}});
 // 字幕：按标点把配音文本切成短句，按字数分配时长
 const CAPS=[];const voice=[];const footage=[];
 SC.forEach((sc,i)=>{if(sc.type==='footage')footage.push({scene:i,slot:sc.slot||null,at:+T[i].toFixed(3),dur:+sc._dur.toFixed(3)});
@@ -189,7 +207,8 @@ SC.forEach((sc,i)=>{if(sc.type==='footage')footage.push({scene:i,slot:sc.slot||n
  parts.forEach(x=>{const d=sc._vo*x.length/n;CAPS.push([+at.toFixed(3),+(at+d).toFixed(3),x]);at+=d})});
 if(C.captions!==false&&!C.legacyLayout)document.body.insertAdjacentHTML('beforeend','<div id="cap"><span id="capT"></span></div>');
 function caption(t){const el=$('cap');if(!el)return;const c=CAPS.find(c=>t>=c[0]&&t<c[1]);
- if(!c){el.style.display='none';return}el.style.display='flex';const s=$('capT');s.textContent=c[2];s.style.fontSize=Math.min(48,900/c[2].length)+'px'}
+ if(!c){el.style.display='none';return}el.style.display='flex';const s=$('capT');s.textContent=c[2];s.style.fontSize=Math.min(48,900/c[2].length)+'px';
+ const q=pr(t,c[0],c[0]+0.18);s.style.transform=`translateY(${(1-eo(q))*14}px) scale(${0.92+0.08*eb(q)})`;s.style.opacity=Math.min(1,q*2.5)}
 // .col 的上下边界：避开吉祥物
 SC.forEach((sc,i)=>{const c=$('s'+i+'_col');if(!c)return;const m=MP[i];let top=190,bottom=1440;
  if(m){const mt=m.f-FEET*m.S;if(mt<700)top=Math.max(top,m.f+20);else bottom=Math.min(bottom,mt-20)}
@@ -204,7 +223,7 @@ function fitAll(){document.querySelectorAll('.sc').forEach(sc=>{const d=sc.style
 fitAll();
 window.ready=async()=>{await document.fonts.ready;
  await Promise.all([...document.images].map(im=>im.complete?(im.naturalWidth?null:Promise.reject(new Error('图片加载失败：'+im.getAttribute('src')))):new Promise((res,rej)=>{im.onload=res;im.onerror=()=>rej(new Error('图片加载失败：'+im.getAttribute('src')))})));
- await Promise.all(SC.map(sc=>TYPES[sc.type].load?TYPES[sc.type].load(sc):null));fitAll();seek(0)};
+ await Promise.all(SC.map(sc=>TY(sc).load?TY(sc).load(sc):(sc.frames&&sc.n>0&&TYPES.footage?TYPES.footage.load(sc):null)));fitAll();seek(0)};
 window.TIMELINE={dur:T.at(-1),cuts:T.slice(1,-1),sfx,bpm:C.bpm||120,voice,captions:CAPS,footage};
 window.seek=seek;window.T=T;
 })();

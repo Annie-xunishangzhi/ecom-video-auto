@@ -41,6 +41,7 @@ def test_make_end_to_end_fake_tts(cjk_root, ok):
     assert len(hist) == 1 and hist[0]["id"] == "e2e-a" and hist[0]["structure"] == "contrast-then-suspense" and hist[0]["track"] == "upbeat-001" and hist[0]["has_footage"] is False
     pub = json.loads((out/"publish.json").read_text(encoding="utf-8"))
     assert pub["pending_footage"] is True and "AI" in pub["reminder"] and pub["music"]["license"] == "测试用" and pub["music"]["attribution"] == "测试署名" and pub["tags"] == ok["tags"]
+    assert pub["visual_tier"] == "兜底版" and "still_ratio" in pub["motion"] and (out/"motion.json").exists() and (out/"review.jpg").exists()
 def test_real_footage_marks_not_pending(cjk_root, ok, fx):
     ok["structure"] = "timer-race"; ok["mid_hook"] = "pitfall"      # 避开上一条用过的结构和钩子
     ok["theme"] = "ink"; ok["mood"] = "calm"                         # 同一份文案：再错开主题和情绪，查重才放行
