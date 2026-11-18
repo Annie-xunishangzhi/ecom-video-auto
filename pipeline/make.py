@@ -69,7 +69,8 @@ def _ffmpeg(args, cwd, what):
     if r.returncode != 0:
         raise Stop(f"{what}失败：{r.stderr.strip()[-300:]}")
 
-def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False, music_mode: str = "compose", check_history=None) -> Path:
+def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = False, music_mode: str = "compose", check_history=None,
+        allow_still: bool = False) -> Path:
     """check_history：剧本检查时拿来比对“近 N 条不重复”的历史；重出旧片时传它原来位置之前的历史。"""
     script = json.loads(script_path.read_text(encoding="utf-8"))
     vid = script["id"]; out = script_path.parent
@@ -102,7 +103,10 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
 
     print("4/9 编译内容")
     content = out / "content.js"
-    content.write_text(compile_script(script, voice, foot), encoding="utf-8")
+    try:
+        content.write_text(compile_script(script, voice, foot, out / "visual.js"), encoding="utf-8")
+    except FileNotFoundError as e:
+        raise Stop(str(e))
 
     print("5/9 抽帧检查 → contact.jpg")
     _node("shots.js", content, out, "抽帧")
@@ -111,6 +115,19 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
     _node("render.js", content, out, "渲染")
     timeline = json.loads((out / "timeline.json").read_text(encoding="utf-8"))
     secs = float(timeline["dur"])
+    import motion_check
+    n0 = len(timeline["cuts"]) + 1
+    (out / "list.txt").write_text("".join(f"file 'scene{i}.mp4'\n" for i in range(n0)), encoding="utf-8")
+    _ffmpeg(["-f", "concat", "-safe", "0", "-i", "list.txt", "-c", "copy", "video.mp4"], out, "拼接")
+    mc = motion_check.check(out / "video.mp4")
+    (out / "motion.json").write_text(json.dumps(mc, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"   画面运动：静止 {mc['still_ratio']:.1%}，冻结 {len(mc['still_runs'])} 段，缺新动作 {len(mc['event_gaps'])} 段")
+    tier = "自写画面" if any(sc.get("visual") for sc in script["scenes"]) else "兜底版"
+    if tier == "兜底版" and not mc["ok"]:
+        print("   ! 兜底场景库做不到全程运动，这条标为\"画面为兜底版\"（交付时要告诉用户）")
+    elif not mc["ok"] and not allow_still:
+        raise Stop("画面运动检查没通过（详见 motion.json）：\n" + "\n".join("  ✗ " + p for p in mc["problems"]) +
+                   "\n  → 给这些时间段加入场、镜头推移、数字跳动或持续微动；兜底场景库做不到时改写 visual.js")
     if not MIN_S <= secs <= MAX_S:
         diff = (MIN_S - secs) if secs < MIN_S else (secs - MAX_S)
         raise Stop(f"成片时长 {secs:.1f} 秒，不在 {MIN_S}–{MAX_S} 秒内：配音文本大约要{'加' if secs < MIN_S else '删'} {int(diff * CPS) + 1} 个字")
@@ -135,12 +152,15 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
         raise Stop(f"配乐失败：{e}")
 
     print("8/9 合成")
-    n = len(timeline["cuts"]) + 1
-    (out / "list.txt").write_text("".join(f"file 'scene{i}.mp4'\n" for i in range(n)), encoding="utf-8")
-    _ffmpeg(["-f", "concat", "-safe", "0", "-i", "list.txt", "-c", "copy", "video.mp4"], out, "拼接")
     _ffmpeg(["-i", "video.mp4", "-i", "audio.wav", "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
              "-shortest", "-movflags", "+faststart", "final.tmp.mp4"], out, "合成")
     (out / "final.tmp.mp4").replace(final)
+    try:
+        from review import review
+        review(final, out / "review.jpg")
+        print("   审片联系表：review.jpg（每秒一格，逐格对照 SKILL.md 的审片清单）")
+    except (RuntimeError, OSError, subprocess.CalledProcessError) as e:
+        print("   ! 审片联系表没生成：", e)
     for f in [out / "video.mp4", out / "list.txt", *out.glob("scene*.mp4")]: f.unlink()
 
     print("9/9 发布信息与历史")
@@ -154,7 +174,8 @@ def run(script_path: Path, footage_args, backend_name: str, reuse_voice: bool = 
                **({"source": {k: (script.get("hot") or {}).get(k) for k in ("topic", "source_url", "source_date")}} if script.get("type") == "hot" else {}), "pending_note": "实录槽位目前是示意画面，对应 skill 录屏后可替换重出。" if pending else "",
                "images": [idx.get(f, {"file": f, "license": "未登记"}) for f in sorted(used)],
                "music": {k: track.get(k) for k in ("id", "title", "source", "license", "license_url", "attribution")},
-               "files": {"video": final.name, "subtitles": f"{vid}.srt", "contact_sheet": "contact.jpg"}}
+               "files": {"video": final.name, "subtitles": f"{vid}.srt", "contact_sheet": "contact.jpg", "review_sheet": "review.jpg", "motion_report": "motion.json"},
+               "visual_tier": tier, "motion": {k: mc.get(k) for k in ("still_ratio", "ok", "problems")}}
     (out / "publish.json").write_text(json.dumps(publish, ensure_ascii=False, indent=1), encoding="utf-8")
     history.append({"id": vid, "date": datetime.date.today().isoformat(), "type": script.get("type"), "step": script.get("step"),
                     "angle_index": script.get("angle_index", 0), "structure": script.get("structure"), "mid_hook": script.get("mid_hook"),
@@ -179,9 +200,10 @@ def main(argv=None) -> int:
     ap.add_argument("script"); ap.add_argument("--footage", action="append"); ap.add_argument("--tts-backend", default="voxcpm", choices=["voxcpm", "fake"])
     ap.add_argument("--music", default="compose", choices=["compose", "library"], help="compose：按剧本段落原创编曲；library：从曲库选曲")
     ap.add_argument("--reuse-voice", action="store_true", help="复用 out/<id>/voice/ 里已合成的配音")
+    ap.add_argument("--allow-still", action="store_true", help="画面运动检查不过也出片（只用于调试，交付的片子不能用）")
     a = ap.parse_args(argv)
     try:
-        final = run(Path(a.script).resolve(), a.footage, a.tts_backend, a.reuse_voice, a.music)
+        final = run(Path(a.script).resolve(), a.footage, a.tts_backend, a.reuse_voice, a.music, allow_still=a.allow_still)
     except Stop as e:
         print("✗", e); return 1
     print("✓ 成片：", final); return 0

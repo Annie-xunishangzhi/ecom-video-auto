@@ -105,12 +105,18 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:var(--ink);font-
 .frow{display:flex;align-items:center;gap:24px;height:56px}.frow i{flex:none;width:150px;height:22px;border-radius:11px;background:#4a443c}
 .frow b{display:block;height:34px;width:0;max-width:calc(100% - 260px);border-radius:10px;background:#cfc6b4}.frow em{margin-left:auto;color:#5BD69B;font-size:44px;font-style:normal;font-weight:900;opacity:0}
 #cap{position:absolute;left:60px;right:60px;top:1478px;height:110px;z-index:60;display:none;align-items:center;justify-content:center;pointer-events:none}
-#capT{background:rgba(20,18,16,.82);color:#fff;border-radius:18px;padding:12px 34px;font-size:48px;font-weight:700;white-space:nowrap}
+#capT{background:rgba(20,18,16,.82);color:#fff;border-radius:18px;padding:12px 34px;font-size:48px;font-weight:700;white-space:nowrap;display:inline-block}
 </style></head>
 <body>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
 <script>
 // 内容文件：默认 content.js；也可用 ?c=content.pdd.js 指定
 document.write('<script src="'+(new URLSearchParams(location.search).get('c')||'content.js')+'"><\/script>');
+</script>
+<script>
+// 这条视频自己的画面代码（out/<编号>/visual.js），由 compile_script 写进 CONTENT.visual
+if(window.CONTENT&&CONTENT.visual)document.write('<script src="'+CONTENT.visual+'"><\/script>');
 </script>
 <script src="themes.js"></script>
 <script src="brand.js"></script>

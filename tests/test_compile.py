@@ -32,3 +32,20 @@ def test_photo_scene_takes_image_file(ok):
     ok["scenes"][2] = {"type":"photo","vo":"凌晨两点还在填表格","line1":"凌晨两点","line2":"还在填表格"}
     ok["images"] = [{"scene":2,"prompt":"x","file":"office-night.jpg"}]
     assert content(compile_script(ok, VO, {}))["scenes"][2]["image"] == "office-night.jpg"
+
+
+def test_visual_file_goes_into_content(tmp_path):
+    import json as _j
+    from compile_script import compile_script
+    vis = tmp_path / "visual.js"; vis.write_text("window.VISUALS={a:{}}", encoding="utf-8")
+    sc = {"theme": "ink", "scenes": [{"type": "statement", "visual": "a", "vo": "你好"}]}
+    js = compile_script(sc, {"s01": 1.0}, {}, vis)
+    c = _j.loads(js.split("window.CONTENT=")[1].split(";\nwindow.VO=")[0])
+    assert c["visual"] == vis.resolve().as_uri() and c["scenes"][0]["visual"] == "a"
+
+
+def test_visual_named_but_file_missing(tmp_path):
+    import pytest
+    from compile_script import compile_script
+    with pytest.raises(FileNotFoundError):
+        compile_script({"scenes": [{"type": "statement", "visual": "a"}]}, {}, {}, tmp_path / "visual.js")

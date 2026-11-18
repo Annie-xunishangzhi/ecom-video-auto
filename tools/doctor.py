@@ -23,7 +23,7 @@ def checks():
     sf = (ROOT / "assets" / "soundfont" / "GeneralUser-GS.sf2").is_file() and importlib.util.find_spec("tinysoundfont") is not None
     yield ("✓" if sf else "!"), "原创编曲（SoundFont 音色）", "运行：python -m pip install --no-deps tinysoundfont；音色库应在 assets/soundfont/"
     ref = (ROOT / "assets" / "voice" / "ref.wav").is_file(); vox = importlib.util.find_spec("voxcpm") is not None
-    yield ("✓" if ref and vox else "!"), "配音（VoxCPM + 固定音色）", "运行：python tools/setup_tts.py，再运行 python tools/design_voice.py --auto"
+    yield ("✓" if ref and vox else "!"), "配音（VoxCPM + 固定音色）", "默认用 VoxCPM 网页版配音（tools/web_tts.py），这一项只影响本地直接配音；需要时运行 python tools/setup_tts.py。不要运行 design_voice.py 覆盖固定音色"
     lib = ROOT / "assets" / "music" / "library.json"
     n = len(json.loads(lib.read_text(encoding="utf-8"))) if lib.is_file() else 0
     yield ("✓" if n >= 12 else "!" if n else "✗"), f"曲库（{n} 首）", "用 tools/add_track.py 入库，建议 30 首以上"

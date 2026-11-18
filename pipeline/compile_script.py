@@ -14,7 +14,8 @@ def segments(script: dict) -> list:
     """[(配音段编号, 文本)]，按场景顺序"""
     return [(sid, text) for _, sid, text in _voiced(script)]
 
-def compile_script(script: dict, voice: dict, footage: dict) -> str:
+def compile_script(script: dict, voice: dict, footage: dict, visual: Path | None = None) -> str:
+    """visual：这条视频自己的画面代码 out/<编号>/visual.js（有就用；剧本场景里 \"visual\" 字段指向其中的场景名）"""
     scenes = copy.deepcopy(script["scenes"])
     for i, sid, _ in _voiced(script):
         scenes[i]["v"] = sid
@@ -32,4 +33,8 @@ def compile_script(script: dict, voice: dict, footage: dict) -> str:
         scenes[-1]["keyword"] = (script.get("cta") or {}).get("keyword")
     content = {"theme": script.get("theme", "paper"), "outro": True, "captions": True,
                "mascot": {"dir": "../assets/mascot", "poses": POSES}, "scenes": scenes}
+    if visual and Path(visual).is_file():
+        content["visual"] = Path(visual).resolve().as_uri()
+    elif any(sc.get("visual") for sc in scenes):
+        raise FileNotFoundError("剧本里有场景写了 visual，但找不到画面代码 visual.js")
     return ("window.CONTENT=" + json.dumps(content, ensure_ascii=False) + ";\nwindow.VO=" + json.dumps(voice, ensure_ascii=False) + ";\n")

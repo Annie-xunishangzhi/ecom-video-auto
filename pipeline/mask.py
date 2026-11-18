@@ -29,8 +29,8 @@ def apply_mask(clip, rects, out) -> Path:
     n = len(boxes)
     parts = [f"[0:v]split={n + 1}[base]" + "".join(f"[c{i}]" for i in range(n))]
     for i, (x, y, w, h) in enumerate(boxes):
-        rad = max(2, min(w, h) // 4)
-        parts.append(f"[c{i}]crop={w}:{h}:{x}:{y},boxblur={rad}:4,boxblur={rad}:4[b{i}]")
+        rad = max(2, min(w, h) // 4); crad = max(0, min(w, h) // 4 - 1)   # 色度平面只有一半大，半径要单独压小（新版 ffmpeg 会直接报错）
+        parts.append(f"[c{i}]crop={w}:{h}:{x}:{y},boxblur={rad}:4:{crad}:4,boxblur={rad}:4:{crad}:4[b{i}]")
     last = "base"
     for i, (x, y, w, h) in enumerate(boxes):
         parts.append(f"[{last}][b{i}]overlay={x}:{y}[o{i}]"); last = f"o{i}"
