@@ -89,9 +89,27 @@ nav:{bg:'#0b0f22',
   <div id="${id}page" style="position:absolute;left:250px;right:0;top:0;bottom:0;padding:40px">${Array.from({length:7},(_,k)=>`<div class="a-sk" id="${id}k${k}" style="left:40px;top:${60+k*96}px;width:${[480,360,560,300,520,420,380][k]}px"></div>`).join('')}</div>
   <div class="a-cur" id="${id}cur"></div></div>`;M().split(H.$(id+'hd'));
   if(H.frame(sc,0)){H.$(id+'cv').style.display='block';H.$(id+'sim').style.display='none';H.$(id+'shi').style.display='none'}},
- anim:(sc,id,t,H)=>{const MO=M(),$=H.$,g=K.frame(id,t,H,BG,{seed:22});
+ anim:(sc,id,t,H)=>{const MO=M(),$=H.$,g=K.frame(id,t,H,BG,{seed:22,beats:H.frame(sc,0)?[H.at(sc,'后台')??0.9,H.at(sc,'发布页')??1.9]:[]});
   K.title($(id+'hd')._chars,t,0.1,'drop');MO.set($(id+'win'),{y:160*(1-MO.tw(t,0.05,0.6,'outBack')),rx:10*(1-MO.tw(t,0,0.8)),r:MO.wob(t,3,0.5,0.3)});
-  const im=H.frame(sc,t);if(im){const c=$(id+'cv');const cg=c.getContext('2d');H.drawFrame(cg,im,0,0,c.width,c.height);return}
+  const im=H.frame(sc,t);if(im){
+   // 实录是一张张截图拼的，画面几乎不动：用源矩形做镜头（全页 → 推近价格表 → 再推 → 往下摇），加逐行扫的高亮框
+   const c=$(id+'cv'),cg=c.getContext('2d'),W=im.width,Hh=im.height;
+   const b1=H.at(sc,'后台')??0.9,b2=H.at(sc,'发布页')??1.9,b3=H.at(sc,'不用')??2.8;
+   const z0=W*c.height/c.width/Hh*1.01;   // 起始缩放：源矩形正好不超过原图高度
+   const z=MO.kf(t,[[0,z0],[b1,z0*1.03],[b1+0.5,z0*1.3,'outBack'],[b2,z0*1.33],[b2+0.45,z0*1.65,'outBack'],[H.dur,z0*1.75]]);
+   const vx=MO.kf(t,[[0,W/2],[b1,W/2],[b1+0.5,W*0.56,'inOutC'],[b2+0.45,W*0.58,'inOutC'],[H.dur,W*0.6]]);
+   const vy=MO.kf(t,[[0,Hh/2],[b1,Hh/2],[b1+0.5,Hh*0.5,'inOutC'],[b2+0.45,Hh*0.56,'inOutC'],[b3,Hh*0.62,'inOutC'],[H.dur,Hh*0.7]]);
+   const vw=W/z,vh=vw*c.height/c.width,sx=Math.min(Math.max(vx-vw/2,0),W-vw),sy=Math.min(Math.max(vy-vh/2,0),Hh-vh),k=c.width/vw;
+   cg.fillStyle='#f4f4f0';cg.fillRect(0,0,c.width,c.height);cg.drawImage(im,sx,sy,vw,vh,0,0,c.width,c.height);
+   // 高亮框：从 b1 起逐行往下扫（原画面坐标），每到一行顿一下
+   const row=Math.floor(MO.tw(t,b1+0.3,H.dur-b1-0.3)*6),ry=Hh*(0.42+row*0.055)+Hh*0.012*MO.E.outC((t*2.2)%1);
+   const hx=(W*0.36-sx)*k,hy=(ry-sy)*k,hw=W*0.5*k,hh=Hh*0.045*k,ho=MO.tw(t,b1+0.3,0.25);
+   cg.save();cg.globalAlpha=ho;cg.strokeStyle=ACC;cg.lineWidth=5;cg.shadowColor='rgba(255,77,26,.8)';cg.shadowBlur=24;cg.strokeRect(hx,hy,hw,hh);
+   cg.globalAlpha=ho*0.12;cg.fillStyle=ACC;cg.fillRect(hx,hy,hw,hh);cg.restore();
+   // 扫光一遍遍掠过窗口
+   const sp=((t*0.8)%1)*(c.width+400)-200,gr=cg.createLinearGradient(sp-120,0,sp+120,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(0.5,'rgba(255,255,255,.28)');gr.addColorStop(1,'rgba(255,255,255,0)');cg.fillStyle=gr;cg.fillRect(0,0,c.width,c.height);
+   MO.ring(g,t,b1,540,850,{r1:520,width:8});MO.ring(g,t,b2,540,850,{r1:620,width:8});K.flash(g,t,b2,0.15);
+   return}
   const tg=sc.target;const C1=0.9,C2=1.9,LOAD=2.2;
   // 光标：先去"商品管理"，再点"发布新商品"，然后进表单
   const cx=MO.kf(t,[[0.5,700],[C1-0.15,130,'inOutC'],[C2-0.15,130],[C2+0.6,560,'inOutC'],[H.dur,600]]);
@@ -150,10 +168,10 @@ connect:{bg:'#0b0f22',
   <div class="v-a" id="${id}fd" style="left:90px;top:520px;width:300px;height:300px">${I.folder(300)}</div>
   ${sc.files.map((f,i)=>`<div class="a-chip" id="${id}c${i}" style="left:0;top:0">${H.fmt(f)}</div>`).join('')}
   ${K.win(id,H.fmt(sc.win),{x:470,y:430,w:560,h:900})}
-  <div class="v-a v-shi" style="right:80px;top:510px">示意</div>
+  <div class="v-a v-shi" id="${id}shi" style="right:80px;top:510px">示意</div>
   <div class="v-a" id="${id}plug" style="left:395px;top:640px;width:70px;height:70px;border-radius:50%;background:${GOLD};box-shadow:0 0 50px rgba(255,201,77,.9)"></div>`),
  init:(sc,id,H)=>{H.$(id+'body').innerHTML=`<canvas id="${id}cv" width="560" height="836" style="position:absolute;inset:0;display:none"></canvas><div id="${id}sim" style="padding:30px;display:flex;flex-direction:column;gap:20px">${sc.files.map((f,i)=>`<div class="a-field" style="height:100px;font-size:34px" id="${id}f${i}"><span class="l" style="width:90px">${H.fmt(f)}</span><span class="v" id="${id}v${i}"></span></div>`).join('')}</div>`;
-  if(H.frame(sc,0)){H.$(id+'cv').style.display='block';H.$(id+'sim').style.display='none'}},
+  if(H.frame(sc,0)){H.$(id+'cv').style.display='block';H.$(id+'sim').style.display='none';H.$(id+'shi').style.display='none'}},
  anim:(sc,id,t,H)=>{const MO=M(),$=H.$,g=K.frame(id,t,H,BG,{seed:51});const S2=H.at(sc,'第二步')??2.2;
   [[id+'st1',0.15],[id+'st2',S2-0.1]].forEach(([e,a])=>MO.set($(e),{x:-300*(1-MO.tw(t,a,0.4,'outBack')),o:MO.tw(t,a,0.2)}));
   $(id+'b1').style.borderColor=t<S2?ACC:'rgba(255,255,255,.22)';$(id+'b2').style.borderColor=t>=S2?ACC:'rgba(255,255,255,.22)';

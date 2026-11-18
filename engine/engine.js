@@ -129,7 +129,8 @@ const TY=sc=>sc._ty;
 SC.forEach((sc,i)=>{if(sc.visual&&!VIS[sc.visual])throw new Error('画面代码里没有场景 '+sc.visual+'（检查 visual.js 的 window.VISUALS）');
  sc._ty=sc.visual?VIS[sc.visual]:TYPES[sc.type];sc._custom=!!sc.visual;const ty=sc._ty;if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=sc._vo?Math.max(sc.dur||0,2.0,sc._lead+sc._vo+sc._tail):(sc.dur||ty.dur);/* 有配音时按配音长度走，避免画面停住没人说话 */sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
 document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};--scbg:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TY(sc).build(sc,'s'+i+'_',HX)}</div>`).join(''));
-SC.forEach((sc,i)=>{if(TY(sc).init)TY(sc).init(sc,'s'+i+'_',HX)});
+const HASF=sc=>!!(sc.frames&&sc.n>0);/* 有实录帧的场景等帧加载完（ready）再 init，init 里才能用 H.frame 判断有没有实录 */
+SC.forEach((sc,i)=>{if(TY(sc).init&&!HASF(sc))TY(sc).init(sc,'s'+i+'_',HX)});
 {const seen=new Set,dup=new Set;document.querySelectorAll('[id]').forEach(e=>{if(seen.has(e.id))dup.add(e.id);seen.add(e.id)});
  if(dup.size)throw new Error('画面里有重复的元素 id（会互相覆盖动画）：'+[...dup].slice(0,8).join('、'))}
 
@@ -225,7 +226,8 @@ function fitAll(){document.querySelectorAll('.sc').forEach(sc=>{const d=sc.style
 fitAll();
 window.ready=async()=>{await document.fonts.ready;
  await Promise.all([...document.images].map(im=>im.complete?(im.naturalWidth?null:Promise.reject(new Error('图片加载失败：'+im.getAttribute('src')))):new Promise((res,rej)=>{im.onload=res;im.onerror=()=>rej(new Error('图片加载失败：'+im.getAttribute('src')))})));
- await Promise.all(SC.map(sc=>TY(sc).load?TY(sc).load(sc):(sc.frames&&sc.n>0&&TYPES.footage?TYPES.footage.load(sc):null)));fitAll();seek(0)};
+ await Promise.all(SC.map(sc=>TY(sc).load?TY(sc).load(sc):(sc.frames&&sc.n>0&&TYPES.footage?TYPES.footage.load(sc):null)));
+ SC.forEach((sc,i)=>{if(TY(sc).init&&HASF(sc))TY(sc).init(sc,'s'+i+'_',HX)});fitAll();seek(0)};
 window.TIMELINE={dur:T.at(-1),cuts:T.slice(1,-1),sfx,bpm:C.bpm||120,voice,captions:CAPS,footage};
 window.seek=seek;window.T=T;
 })();
