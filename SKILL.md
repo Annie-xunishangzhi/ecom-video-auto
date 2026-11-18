@@ -23,8 +23,9 @@ description: 自动制作电商自动化 skills 的推广短视频（选题、�
 
 | # | 做什么 | 命令 / 文件 | 节 |
 |---|---|---|---|
-| 1 | 选题 | `python pipeline/pick_topic.py` | 1 |
-| 2 | 问用户要 skill，读功能点 | `python pipeline/read_skill.py <步骤号> [skill 路径]` | 2 |
+| 0 | （第一次 / 用户有新 skill 时）查看并登记已有 skill | `python tools/find_skills.py` | 1 |
+| 1 | 选题（有 skill 的大类优先） | `python pipeline/pick_topic.py` | 1 |
+| 2 | 用选题带出的 skill，或问用户要；读功能点 | `python pipeline/read_skill.py <步骤号> [skill 路径]` | 2 |
 | 3 | （有 skill 时）录屏生成素材包 | `pipeline/record_web.py` 或 `tools/kimi_call.py` + `pipeline/frames_pack.py` | 3 |
 | 4 | 写剧本 | `out/<编号>/script.json` | 4 |
 | 5 | 检查剧本，改到没有 ✗ | `python pipeline/script_check.py out/<编号>/script.json` | 5 |
@@ -62,9 +63,24 @@ python -m playwright install chromium         # 录网页工具、爆款采集�
 
 ## 1. 选题
 
+**先看用户已有哪些 skill**（第一次用、或用户说做了新 skill 时）：
+
 ```
-python pipeline/pick_topic.py
+python tools/find_skills.py                                   # 哪些大类已有 skill + 在本机找到的候选 skill 及最像的大类
+python tools/find_skills.py --set 4 "D:\…\pdd-publish-assistant"   # 用户确认后登记：第 4 类用这个 skill
+python tools/find_skills.py --remove 4                        # 取消登记
 ```
+
+候选是按说明文字粗略比对出来的，**最像的大类不一定对**（例如拼多多发布助手也做资料检查，会被排到第 2 类前面）：把候选和建议的大类列给用户，用户确认后再 `--set`。做视频的 skill（例如 `ecom-short-video`）不是电商步骤，不登记。登记表是 `data/skills.local.json`（本机路径，不进 git）。
+
+然后选题：
+
+```
+python pipeline/pick_topic.py          # 有 skill 的大类优先
+python pipeline/pick_topic.py --all    # 不看 skill，按主线 1–8 类轮换
+```
+
+**有 skill 的大类优先**：登记过 skill、或 `topics.json` 写了 `skill_path`、或有确认过的素材包（`assets/footage/s<步骤>/pack.json` 的 `review` 为 `ok`）的大类，在它们之间轮换；一个都没有时才按主线轮换。备用类（`"auto": false`）有了 skill 也会进优先范围。输出里 `has_skill`、`skill_path`、`skill_from`（`registry` / `topics` / `pack`）说明这一类的 skill，`owned_steps` 是所有有 skill 的大类。
 
 输出这次要做的大类（`step`、`name`）、小点（`point`）和痛点（`pain`）。选题池是 `data/topics.json`。**主线是第 1–8 类**（选品控价、资料维护、素材、上架、推广、客服、私域、复盘，对应现有的 skill），每类 6–7 个小点，按"最久没做的大类、类内下一个小点"自动轮换。第 9–18 类（售后退款、评价口碑、库存补货、订单物流、活动大促、直播带货、财务对账、多平台铺货、合规巡检、团队日常）标了 `"auto": false`，是备用选题：不参与自动轮换，用户点名或用下面的 `--step` 才做；有了对应 skill 后删掉这个标记即可加入轮换。加 `--hot` 时按七比三穿插热点视频（第 12 节）。
 
@@ -80,7 +96,9 @@ python pipeline/pick_topic.py --topic "退货地址自动核对" --step 9 --pain
 
 ## 2. 问用户要 skill（可以跳过）
 
-问用户一句："这一步对应的 skill 放在哪？没有就直接回车跳过。"
+- 选题输出里有 `skill_path`：直接用它，不用再问。告诉用户这条用的是哪个 skill。
+- `has_skill` 为 `true` 但 `skill_path` 为空（只有素材包、还没登记路径）：先跑 `python tools/find_skills.py`，把候选给用户确认后 `--set`，再继续。
+- `has_skill` 为 `false`：问用户一句"这一步对应的 skill 放在哪？没有就直接回车跳过。"。用户给了路径，读完后顺手 `--set` 登记，以后选题会优先这一类。
 
 ```
 python pipeline/read_skill.py <步骤号> [skill 路径]      # 不挂大类的自定义选题，步骤号写 -
