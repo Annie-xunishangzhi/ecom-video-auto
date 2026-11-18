@@ -53,5 +53,14 @@
   "source": "截自旧成片 out/成片/G_选品控价.mp4 的配图画面（原图由 gpt-image-2 生成，原图文件已丢失）",
   "license": "自有（模型生成）",
   "date": "2026-11-18"
+ },
+ {
+  "id": "s9-refund-night",
+  "file": "s9-refund-night.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "大促刚结束的电商售后工位，深夜，显示器上是一长串退款申请列表的色块和红色角标，桌上堆着退回来的快递纸箱和撕开的快递袋，台灯暖光",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
  }
 ]

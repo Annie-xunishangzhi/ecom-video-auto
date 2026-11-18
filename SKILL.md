@@ -66,7 +66,7 @@ python -m playwright install chromium         # 录网页工具、爆款采集�
 python pipeline/pick_topic.py
 ```
 
-输出这次要做的大类（`step`、`name`）、小点（`point`）和痛点（`pain`）。选题池是 `data/topics.json`：18 个大类（选品控价、资料维护、素材、上架、推广、客服、私域、复盘、售后退款、评价口碑、库存补货、订单物流、活动大促、直播带货、财务对账、多平台铺货、合规巡检、团队日常），每类 3–7 个小点，按"最久没做的大类、类内下一个小点"轮换。加 `--hot` 时按七比三穿插热点视频（第 12 节）。
+输出这次要做的大类（`step`、`name`）、小点（`point`）和痛点（`pain`）。选题池是 `data/topics.json`。**主线是第 1–8 类**（选品控价、资料维护、素材、上架、推广、客服、私域、复盘，对应现有的 skill），每类 6–7 个小点，按"最久没做的大类、类内下一个小点"自动轮换。第 9–18 类（售后退款、评价口碑、库存补货、订单物流、活动大促、直播带货、财务对账、多平台铺货、合规巡检、团队日常）标了 `"auto": false`，是备用选题：不参与自动轮换，用户点名或用下面的 `--step` 才做；有了对应 skill 后删掉这个标记即可加入轮换。加 `--hot` 时按七比三穿插热点视频（第 12 节）。
 
 **跳出选题池**（用户点名要做某个题、或池里没有合适的）：
 
@@ -155,6 +155,8 @@ python pipeline/script_check.py out/<编号>/script.json
 python tools/gen_image.py "深夜的电商办公室，桌上堆满表格和样品" --id <图片编号>
 python tools/regen_images.py        # 剧本里登记了、但 assets/images/ 里没有的图，按剧本记下的原提示词补齐
 ```
+
+生图报 `RemoteDisconnected`（一般是三分多钟后被代理掐断）时，降一档质量再试：先设环境变量 `IMAGE_QUALITY=medium`。氛围配图用 medium 足够。
 
 需要 `OPENAI_API_KEY`：请用户放进 `tools/.env`（一行 `OPENAI_API_KEY=…`，已被 `.gitignore` 排除），**不要让用户把 Key 贴进对话**。
 

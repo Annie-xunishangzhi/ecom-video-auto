@@ -1,4 +1,4 @@
-"""自动选题：从选题池（data/topics.json，大类 → 小点）里挑最久没做过的一类，类内按顺序轮换小点；按七比三穿插热点视频。
+"""自动选题：从选题池（data/topics.json，大类 → 小点）里挑最久没做过的一类（"auto": false 的大类不参与），类内按顺序轮换小点；按七比三穿插热点视频。
 自定义选题跳出选题池：python pipeline/pick_topic.py --topic "退货地址自动核对" [--step 9] [--pain "痛点1,痛点2"]
   --step 可选：挂到最接近的大类（用于素材包、话题标签、轮换记录）；不挂时 step 为 null。"""
 import datetime, json, sys
@@ -42,7 +42,8 @@ def pick(topics: list, history: list, hot_enabled: bool = False, hot_items=None,
             last_seen[h["step"]] = i
             if isinstance(h.get("angle_index", 0), int):   # 自定义选题的 angle_index 为 null，不影响类内轮换
                 last_angle[h["step"]] = h.get("angle_index", 0)
-    topic = min(topics, key=lambda t: (last_seen.get(t["step"], -1), t["step"]))
+    pool = [t for t in topics if t.get("auto", True)] or topics   # "auto": false 的大类不进自动轮换，只能 --step / --topic 点名
+    topic = min(pool, key=lambda t: (last_seen.get(t["step"], -1), t["step"]))
     step = topic["step"]
     n = max(1, len(topic.get("points", [])))
     angle = (last_angle[step] + 1) % n if step in last_angle else 0

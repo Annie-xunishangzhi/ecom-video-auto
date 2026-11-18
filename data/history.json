@@ -9,7 +9,7 @@
   "mid_hook": "steps",
   "theme": "paper",
   "track": "composed-76778",
-  "has_footage": false
+  "has_footage": true
  },
  {
   "id": "2026-11-17-s2-a",
@@ -94,5 +94,17 @@
   "theme": "ink",
   "track": "composed-46419",
   "has_footage": false
+ },
+ {
+  "id": "2026-11-18-s9-a",
+  "date": "2026-11-18",
+  "type": "product",
+  "step": 9,
+  "angle_index": 0,
+  "structure": "question-then-pitfall",
+  "mid_hook": "steps",
+  "theme": "paper",
+  "track": "composed-66508",
+  "has_footage": true
  }
 ]

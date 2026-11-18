@@ -8,10 +8,10 @@ def test_corrupt_history_is_empty(tmp_path):
 def test_non_list_history_is_empty(tmp_path):
     p = tmp_path/"h.json"; p.write_text('{"a":1}', encoding="utf-8")
     assert load_history(p) == []
-STEPS = lambda topics: [t["step"] for t in topics]
+STEPS = lambda topics: [t["step"] for t in topics if t.get("auto", True)]   # 参与自动轮换的大类
 def test_pool_is_wide(topics):
     assert len(topics) >= 15 and sum(len(t["points"]) for t in topics) >= 60
-    assert len(set(STEPS(topics))) == len(topics)
+    assert len({t["step"] for t in topics}) == len(topics)
 def test_picks_least_recently_used_step(topics):
     *rest, last = STEPS(topics)
     assert pick(topics, [{"type":"product","step":s} for s in rest])["step"] == last
@@ -35,6 +35,13 @@ def test_every_point_is_usable(topics):
     for t in topics:
         for i in range(len(t["points"])):
             pt, pain = point_of(t, i); assert pt.strip() and pain
+def test_auto_false_steps_are_skipped(topics):
+    off = [t["step"] for t in topics if t.get("auto") is False]
+    assert off and set(range(1, 9)) <= set(STEPS(topics))   # 主线 1–8 类在轮换里，后加的类先不进
+    for i in range(30):
+        assert pick(topics, [{"type":"product","step":s} for s in STEPS(topics)][:i % 8])["step"] not in off
+def test_auto_false_step_still_usable_by_name(topics):
+    assert custom(["x", "--topic", "退款预审", "--step", "9"], topics)["step"] == 9
 def test_custom_topic(topics):
     r = custom(["x", "--topic", "退货地址自动核对", "--step", "9", "--pain", "地址填错，退货寄丢"], topics)
     assert r["custom"] and r["step"] == 9 and r["point"] == "退货地址自动核对" and r["pain"] == ["地址填错", "退货寄丢"] and r["angle_index"] is None

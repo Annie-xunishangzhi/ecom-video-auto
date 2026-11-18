@@ -1,0 +1,167 @@
+{
+ "id": "2026-11-18-s9-a",
+ "type": "product",
+ "step": 9,
+ "angle_index": 0,
+ "skill": {
+  "provided": false,
+  "name": "退款预审助手"
+ },
+ "structure": "question-then-pitfall",
+ "mid_hook": "steps",
+ "theme": "paper",
+ "mood": "upbeat",
+ "title": "退款单堆成山，你还一单单点开看？",
+ "tags": [
+  "#电商自动化",
+  "#电商售后",
+  "#退款",
+  "#店铺运营"
+ ],
+ "cta": {
+  "keyword": "售后",
+  "platform": "douyin"
+ },
+ "images": [
+  {
+   "scene": 0,
+   "prompt": "大促刚结束的电商售后工位，深夜，显示器上是一长串退款申请列表的色块和红色角标，桌上堆着退回来的快递纸箱和撕开的快递袋，台灯暖光，画面不出现任何品牌标识和文字",
+   "file": "s9-refund-night.jpg"
+  }
+ ],
+ "scenes": [
+  {
+   "type": "photo",
+   "about": "manual",
+   "image": "s9-refund-night.jpg",
+   "vo": "大促刚过，退款申请一下涌进来两百多单，你还在一单单点开看吗？",
+   "visual": "flood",
+   "kicker": "大促过后",
+   "badge": "200+",
+   "note": "估算",
+   "head": "退款单{s:堆成山}",
+   "cards": [
+    "不想要了",
+    "尺码不合适",
+    "少发一件",
+    "快递破损",
+    "质量问题",
+    "七天无理由",
+    "颜色有色差",
+    "仅退款"
+   ],
+   "mascot": {
+    "pos": "bottomRight",
+    "pose": "shock",
+    "S": 250,
+    "x": 830,
+    "f": 1462,
+    "in": 2.2
+   },
+   "tag": "退款"
+  },
+  {
+   "type": "statement",
+   "about": "manual",
+   "vo": "每一单都要看原因、翻聊天、查物流，再决定退不退，一单就要好几分钟。",
+   "visual": "grind",
+   "checks": [
+    "看原因",
+    "翻聊天",
+    "查物流",
+    "退不退"
+   ],
+   "order": "退款申请 · 尺码不合适",
+   "head": "一单{s:好几分钟}",
+   "note": "估算",
+   "status": "待处理"
+  },
+  {
+   "type": "timer",
+   "vo": "处理一慢，超过时限，平台直接判你责任，店铺还要扣分。",
+   "visual": "deadline",
+   "label": "处理时限",
+   "from": "00:00:09",
+   "stamp": "判责",
+   "score": "店铺分",
+   "head": "{s:超时}就判你的"
+  },
+  {
+   "type": "steps",
+   "mid_hook": true,
+   "vo": "退款预审助手正在做，它分三步：先自动读出每一单的原因，再按类型分好组，第三步最省心。",
+   "visual": "sort",
+   "head": "交给它分{s:三步}",
+   "items": [
+    "自动读出原因",
+    "按类型分好组",
+    "最省心的一步"
+   ],
+   "bins": [
+    "退货退款",
+    "换货",
+    "仅退款",
+    "待核实"
+   ],
+   "note": "开发中 · 功能示意",
+   "mascot": {
+    "pos": "bottomRight",
+    "pose": "point",
+    "S": 270,
+    "x": 790,
+    "f": 1462,
+    "hop": [
+     0.6
+    ]
+   },
+   "pending": "退款申请",
+   "wait": "待看",
+   "reasons": [
+    "尺码不合适",
+    "不想要了",
+    "颜色有色差",
+    "少发一件",
+    "签收后仅退款",
+    "买错了",
+    "快递破损",
+    "质量问题"
+   ]
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "第三步，有疑点的单子它会单独挑出来，附上聊天和物流记录，等你拍板。",
+   "visual": "flag",
+   "num": "03",
+   "head": "疑点单{s:挑出来}",
+   "flag": "疑点 · 签收后申请仅退款",
+   "proofs": [
+    "聊天记录",
+    "物流轨迹",
+    "退款原因"
+   ],
+   "decide": "你来拍板",
+   "note": "开发中 · 功能示意",
+   "mini": "退款单"
+  },
+  {
+   "type": "cta",
+   "vo": "这个退款预审助手正在做，上线免费送，关注我，评论区发售后，上线第一时间发你。",
+   "visual": "cta",
+   "kicker": "退款预审助手 · 开发中",
+   "title": "上线{s:免费送}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "售后",
+   "mascot": {
+    "pos": "cta",
+    "pose": "wave",
+    "wave": true,
+    "hop": [
+     0.7
+    ],
+    "in": 0.6
+   }
+  }
+ ]
+}

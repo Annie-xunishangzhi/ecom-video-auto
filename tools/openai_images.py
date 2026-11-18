@@ -35,7 +35,8 @@ def _send(req) -> bytes:
         time.sleep(3 * (attempt + 1))
     raise RuntimeError("生图失败：" + last)
 
-def generate(prompt: str, size: str = "1024x1536", quality: str = "high", model: str = None) -> bytes:
+def generate(prompt: str, size: str = "1024x1536", quality: str = None, model: str = None) -> bytes:
+    quality = quality or os.environ.get("IMAGE_QUALITY", "high")   # 代理会掐断三分多钟的长连接时，用 IMAGE_QUALITY=medium
     body = json.dumps({"model": model or MODEL, "prompt": prompt, "size": size, "quality": quality, "output_format": "png"}).encode()
     return _send(urllib.request.Request(API + "generations", data=body,
                  headers={"Authorization": "Bearer " + api_key(), "Content-Type": "application/json"}))
