@@ -130,6 +130,8 @@ SC.forEach((sc,i)=>{if(sc.visual&&!VIS[sc.visual])throw new Error('画面代码�
  sc._ty=sc.visual?VIS[sc.visual]:TYPES[sc.type];sc._custom=!!sc.visual;const ty=sc._ty;if(!ty)throw new Error('未知场景类型 '+sc.type);sc._vo=(sc.v&&VO[sc.v])?+VO[sc.v]:0;sc._lead=sc.lead??0.15;sc._tail=sc.tail??0.4;sc._dur=sc._vo?Math.max(sc.dur||0,2.0,sc._lead+sc._vo+sc._tail):(sc.dur||ty.dur);/* 有配音时按配音长度走，避免画面停住没人说话 */sc._bg=bgOf(sc.bg||ty.bg);T.push(T[i]+sc._dur)});
 document.body.insertAdjacentHTML('afterbegin',SC.map((sc,i)=>`<div class="sc${sc._bg==='accent'?' acc':''}" id="sc${i}" style="background:${BGS[sc._bg]||sc._bg};--scbg:${BGS[sc._bg]||sc._bg};color:${FG[sc._bg]||'var(--ink)'}">${TY(sc).build(sc,'s'+i+'_',HX)}</div>`).join(''));
 SC.forEach((sc,i)=>{if(TY(sc).init)TY(sc).init(sc,'s'+i+'_',HX)});
+{const seen=new Set,dup=new Set;document.querySelectorAll('[id]').forEach(e=>{if(seen.has(e.id))dup.add(e.id);seen.add(e.id)});
+ if(dup.size)throw new Error('画面里有重复的元素 id（会互相覆盖动画）：'+[...dup].slice(0,8).join('、'))}
 
 /* ---------- 吉祥物 ---------- */
 const M=C.mascot||null;

@@ -20,6 +20,8 @@ const E={
  inBack:x=>{const c=1.7;return (c+1)*x*x*x-c*x*x},
  outElastic:x=>x===0?0:x===1?1:Math.pow(2,-10*x)*Math.sin((x*10-.75)*(2*Math.PI)/3)+1,
 };
+/* 端点钉死：浮点误差会让 outBack(0) 得到 -2e-16，画布半径为负会直接报错 */
+for(const k in E){const f=E[k];E[k]=x=>x<=0?0:x>=1?1:f(x)}
 const ease=e=>typeof e==='function'?e:(E[e]||E.outC);
 /* 弹簧：u 为开始后的秒数，返回 0→1 带回弹，f 频率（次/秒），d 阻尼 */
 const spring=(u,f=1.6,d=5.5)=>u<=0?0:1-Math.exp(-d*u)*Math.cos(2*Math.PI*f*u);
@@ -84,7 +86,7 @@ const sheen=(el,p,{w=30,color='rgba(255,255,255,.55)',angle=110}={})=>{if(!el)re
 
 /* ---------- Canvas ---------- */
 function canvas(el){if(!el)return null;const g=el.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,el.width,el.height);return g}
-function glow(g,x,y,r,color,a=1){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,color);gr.addColorStop(1,'rgba(0,0,0,0)');
+function glow(g,x,y,r,color,a=1){r=Math.max(0.01,r);const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,color);gr.addColorStop(1,'rgba(0,0,0,0)');
  g.save();g.globalAlpha=a;g.fillStyle=gr;g.fillRect(x-r,y-r,2*r,2*r);g.restore()}
 /* 漂浮粒子（尘埃、光点）：持续运动，永不静止 */
 function dust(g,t,{n=60,seed=1,w=1080,h=1920,color='255,255,255',size=[1.5,5],alpha=[.15,.6],speed=30,drift=40,twinkle=true}={}){
@@ -101,7 +103,7 @@ function burst(g,t,t0,x,y,{n=40,seed=3,colors=['#FF4D1A','#FFC94D','#ffffff','#5
   g.fillStyle=colors[i%colors.length];if(shape==='rect')g.fillRect(-s/2,-s/4,s,s/2);else{g.beginPath();g.arc(0,0,s/2,0,7);g.fill()}g.restore()}}
 /* 冲击环：t0 时刻起一圈扩散的圆环 */
 function ring(g,t,t0,x,y,{r0=20,r1=420,life=0.8,width=10,color='255,77,26'}={}){const u=prog(t,t0,t0+life);if(u<=0||u>=1)return;
- const r=lerp(r0,r1,E.outC(u));g.save();g.strokeStyle=`rgba(${color},${(1-u).toFixed(3)})`;g.lineWidth=width*(1-u)+1;g.beginPath();g.arc(x,y,r,0,7);g.stroke();g.restore()}
+ const r=Math.max(0.01,lerp(r0,r1,E.outC(u)));g.save();g.strokeStyle=`rgba(${color},${(1-u).toFixed(3)})`;g.lineWidth=width*(1-u)+1;g.beginPath();g.arc(x,y,r,0,7);g.stroke();g.restore()}
 /* 流线：一束光线从 a 流向 b（数据流动感） */
 function stream(g,t,ax,ay,bx,by,{n=14,seed=5,color='255,77,26',speed=0.7,size=6,bend=120}={}){
  const mx=(ax+bx)/2+bend,my=(ay+by)/2;for(let i=0;i<n;i++){const p=((t*speed+hash(i,seed))%1);const q=1-p;

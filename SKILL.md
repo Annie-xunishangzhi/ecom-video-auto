@@ -124,15 +124,16 @@ python pipeline/frames_pack.py --step s4 --product 拼多多上架 --mask '[{"x"
 
 **画面档的做法**
 
-0. **先读 `docs/画面档写法.md`**（分镜、构图、运动、骨架、踩过的坑），再读范例 `out/2026-11-17-s7-a/visual.js`。先给每个场景写一句分镜（画面在演什么变化），再写代码。
+0. **先读 `docs/画面档写法.md`**（分镜、构图、运动、套件、骨架、迭代方法、踩过的坑），再从里面的范例表挑一条题材最近的 `visual.js` 读一遍。先给每个场景写一句分镜（画面在演什么变化），再写代码。
 1. 剧本每个场景加 `"visual": "场景名"`，画面要用到的文字也写进这个场景的字段（例如 `"rows": [...]`、`"chips": [...]`）——剧本检查会扫到它们，禁用词、数字规则照样生效。画面代码里不要硬写上屏文字。
-2. 写 `out/<编号>/visual.js`，注册 `window.VISUALS = {场景名: {bg, build, init?, anim, sfx?}, …, outro?}`。完整范例：`out/2026-11-17-s7-a/visual.js`（私域回访，八个场景，先读它再写）。
+2. 写 `out/<编号>/visual.js`，注册 `window.VISUALS = {场景名: {bg, build, init?, anim, sfx?}, …, outro}`。背景、进出场、图标、浏览器外框、结尾关注块、落版都用套件 `window.KIT`（`engine/kit.js`），每条视频只写自己的故事和配色。
    - `build(sc, id, H)` 返回 HTML；元素 id 一律以 `id` 开头。`init` 在搭好后跑一次（例如 `H.MO.split` 拆字）。
    - `anim(sc, id, t, H)`：`t` 是场景内秒数，`H.dur` 场景时长，`H.T` 全片时间。**画面必须是 t 的纯函数**：渲染是逐帧 `seek(t)` 截图，CSS `animation`/`transition`、`requestAnimationFrame`、`Math.random` 都不能用。
    - 动效库 `H.MO`（`engine/motion.js`）：缓动与弹簧 `E` `spring`、关键帧 `kf`、`tw`；确定性随机与噪声 `rng` `hash` `noise` `wob`；`set` 一次设好位移/缩放/3D 旋转/透明度/模糊；逐字动画 `split` `textIn` `textOut` `textWave`；`stagger` `count` `typed` `sheen`；Canvas 的 `dust`（漂浮粒子）`burst`（彩片爆开）`ring`（冲击环）`stream`（数据流）`glow`；镜头 `camera`。
    - 其他：`H.at(sc,'词')` 配音说到这个词的时刻（用来卡点），`H.frame(sc,t)` / `H.drawFrame(...)` 实录帧（footage 场景有素材包时），`H.fmt` 行内标记，`H.img(文件名)` 配图路径，`H.SAFE` 安全区，`H.BRAND` `H.BRAND_LOGO` 落版用。
    - 写了 `outro` 就替换默认落版，但必须保留韬行科技标志和名字。
 3. 企鹅仍由引擎画（场景的 `mascot` 字段），可以用 `S` `x` `f` 自定位置，`move: [[t, x, f, S], …]` 让它走位。
+4. 边写边看：`python pipeline/preview.py out/<编号> 1` 十几秒出一张每秒一格的预览图（`out/<编号>/preview.jpg`），页面报错直接打印。满意了再出片。
 
 **画面标准**（审片时逐条对照）
 
@@ -154,6 +155,7 @@ python pipeline/script_check.py out/<编号>/script.json
 
 ```
 python tools/gen_image.py "深夜的电商办公室，桌上堆满表格和样品" --id <图片编号>
+python tools/regen_images.py        # 剧本里登记了、但 assets/images/ 里没有的图，按剧本记下的原提示词补齐
 ```
 
 把生成的文件名写进剧本对应 `photo` 场景的 `image`，以及 `images` 列表的 `file`。也可以用明确可商用的图片：`--register 图.jpg --id … --source 网址 --license 授权`。来源或授权不明的图不要用。
@@ -167,7 +169,7 @@ python tools/web_tts.py out/<编号>                 # 全部配音，固定音�
 python tools/web_tts.py out/<编号> --only s03      # 只重配某一段（改了这段文案时）
 ```
 
-网页版没开时：`python tools/web_tts.py` 会报连不上，此时请用户打开网页版（或改用 `make.py` 不加 `--reuse-voice`，由本地模型直接配音）。
+网页版没开时 `web_tts.py` 会报连不上：**你自己把它启动**，不要让用户去点。在用户电脑的命令行里运行 `start "" "D:\promgram\.ai_vedio\VoxCPM\Launch-VoxCPM.cmd"`（路径以实际安装位置为准），等大约一分钟、页面能打开后再配音。你的命令行跑不了 Windows 程序时（远程会话），用电脑操控在资源管理器里双击这个 `.cmd`。实在启动不了才改用 `make.py` 不加 `--reuse-voice`（本地模型直接配音，可能爆显存）。
 
 **再出片**（复用刚配好的音）：
 
@@ -177,7 +179,7 @@ python pipeline/make.py out/<编号>/script.json --reuse-voice --footage auto
 python pipeline/make.py out/<编号>/script.json --reuse-voice --footage hook=录屏.mp4:0:8:2 --footage mid=录屏.mp4:20:10:2
 ```
 
-出片时会自动做**画面运动检查**（`pipeline/motion_check.py`，结果写进 `motion.json`）：连续静止 ≥0.8 秒、超过 2 秒没有新动作、整片静止比例 ≥5%，任一条不合格就不出片，按报出的时间段改 `visual.js` 后重跑（只改画面时加 `--reuse-voice`）。兜底版不拦，但 `publish.json` 里 `visual_tier` 是"兜底版"。`--allow-still` 只用于调试，不能交付。
+出片时会自动做**画面运动检查**（`pipeline/motion_check.py`，结果写进 `motion.json`）：连续静止 ≥0.8 秒、超过 2 秒没有新动作、整片静止比例 ≥5%，任一条不合格就不出片。不要整片反复重出：用 `timeline.json` 的 `cuts` 找到出问题的场景，改 `visual.js`（加一拍：`K.frame` 的 `beats`、新元素入场、整块换色），再 `python pipeline/scene_check.py out/<编号> <场景序号>` 只渲染这几个场景复查（几十秒），全过了再整片出。兜底版不拦，但 `publish.json` 里 `visual_tier` 是"兜底版"。`--allow-still` 只用于调试，不能交付。
 
 `--footage 槽位=视频:起点秒:时长秒:倍速`。有素材包时直接用 `--footage auto`，自动取高光片段；没有可用素材包就用示意占位。只换实录、不改文案时加 `--reuse-voice` 可以不重新配音。
 
@@ -226,7 +228,9 @@ python research/digest.py top data/research/<日期>-douyin.json    # 看排名�
 
 用于画面标准升级或换了音色之后，把旧片按新标准重出。**配音文本不变**（已经发过、观众听过），画面和声音换新。
 
-1. 找剧本 `out/<编号>/script.json`。如果剧本没留下来，用 `out/成片/<名>.srt` 还原：字幕之间相隔约 0.55 秒的地方是场景分界，同一场景的几句字幕按原意加上标点连成这个场景的 `vo`；标题、话题标签、评论关键词、配图从同名 `.publish.json` 取；结构、钩子写法、主题从 `data/history.json` 里这条的记录取。
+1. 找剧本 `out/<编号>/script.json`。如果剧本没留下来，用 `python tools/srt_scenes.py out/成片/<名>.srt` 按字幕还原：字幕之间相隔约 0.55 秒的地方是场景分界，同一场景的几句字幕按原意加上标点连成这个场景的 `vo`；标题、话题标签、评论关键词、配图从同名 `.publish.json` 取；结构、钩子写法、主题从 `data/history.json` 里这条的记录取。
+   配图丢了：先 `python tools/regen_images.py`（需要 OPENAI_API_KEY）；没有 Key 时，从旧成片里配图满屏、还没叠字的那一帧截出来（裁掉旧字幕和旧标题），用 `gen_image.py --register` 登记，来源写明"截自旧成片"。
+   剧本有实录槽位但原剧本没写的（未输入 skill 的视频原来也有示意槽位），按原片补回 `footage` 场景，以后录屏能直接替换。
 2. 给每个场景加 `visual` 和上屏文字字段，写 `visual.js`（第 3b 节）。`python pipeline/script_check.py` 检查时，"近 N 条用过"会把这条自己算进去，这几条可以忽略；`redo.py` 出片时会正确排除。
 3. `python tools/web_tts.py out/<编号>` 用当前音色重新配音。
 4. `python tools/redo.py <编号>`：同一编号重出（有可用素材包自动用实录），历史记录留在原位置。
@@ -236,7 +240,8 @@ python research/digest.py top data/research/<日期>-douyin.json    # 看排名�
 
 - 配乐默认由代码原创编曲（`--music compose`）：按剧本段落编排，用 GeneralUser GS 音色库的真实乐器采样渲染，每条视频的调性、和弦、乐器组都不同，不需要署名。`--music library` 改用曲库。
 - 声音固定为 `assets/voice/ref.wav` + `ref.txt` 这一对参考（2026-11-18 起是拼多多发布助手 v6b 企鹅片的人声，来源见 `assets/voice/SOURCE.md`），全片、每条视频都用它，不要换别的声音。克隆参数 cfg 2.0、步数 10、种子 42。
-- 网页版配音用 `tools/web_tts.py`（第 6 节）。它会把参考音复制到网页版能读的 `VoxCPM\output\gradio\ecomvoice_ref\ref.wav`（网页版只读得到自己目录里的文件），调用 `/gradio_api/call/generate`，参数 `[文本, '', {path: 参考音路径, meta:{_type:'gradio.FileData'}}, true, ref.txt 的文字, 2, false, false, 10, 42]`。如果你的命令行连不到用户电脑的 127.0.0.1（远程会话），就在用户电脑的浏览器里用同样参数调这个接口，把生成的各段放进一个目录（s01.wav…），运行 `python tools/import_voice.py out/<编号> 该目录`。
+- 网页版配音用 `tools/web_tts.py`（第 6 节）。它会把参考音复制到网页版能读的 `VoxCPM\output\gradio\ecomvoice_ref\ref.wav`（网页版只读得到自己目录里的文件），调用 `/gradio_api/call/generate`，参数 `[文本, '', {path: 参考音路径, meta:{_type:'gradio.FileData'}}, true, ref.txt 的文字, 2, false, false, 10, 42]`。
+- 远程会话（你的命令行连不到用户电脑的 127.0.0.1）：在用户电脑的浏览器里打开网页版，用页面里的 JavaScript 按同样参数**在后台循环**调接口（一段约 20–30 秒，几十段要十几分钟，不要一段一段等），把结果路径存在页面变量里轮询；全部生成后把各段复制成 `out/<编号>/_v6b_raw/s01.wav…`，运行 `python tools/import_voice.py out/<编号> out/<编号>/_v6b_raw`。
 - agent 听不了音频：配音和配乐的听感要请用户判断。
 
 ## 命令由你直接运行
@@ -250,3 +255,4 @@ python research/digest.py top data/research/<日期>-douyin.json    # 看排名�
 - 曲库：`python tools/add_track.py 曲子.mp3 --mood upbeat --source 来源 --license 授权 [--attribution 署名行]`。没有来源和授权的曲子不会入库。
 - 新姿势的企鹅：`tools/mascot_outfit.py` 加装扮，`tools/mascot_finish.py` 抠图并统一画布。
 - 测试：`python -m pytest` 和 `node --test tests/*.test.mjs`。
+- 画面预览：`python pipeline/preview.py out/<编号> [每格秒数] [--at 秒 …]`。

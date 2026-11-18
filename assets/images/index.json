@@ -25,5 +25,33 @@
   "prompt": "墙上一张贴满便利贴和红圈标记的月历，旁边是电商运营的电脑和手机，屏幕上是促销活动页面的色块，气氛紧张忙乱，傍晚的光线",
   "license": "自有（模型生成）",
   "date": "2026-11-17"
+ },
+ {
+  "id": "s8-reports",
+  "file": "s8-reports.jpg",
+  "source": "截自旧成片 out/成片/D_数据复盘.mp4 的配图画面（原图由 gpt-image-2 生成，原图文件已丢失）",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s3-studio",
+  "file": "s3-studio.jpg",
+  "source": "截自旧成片 out/成片/E_素材生产.mp4 的配图画面（原图由 gpt-image-2 生成，原图文件已丢失）",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s6-cs-morning",
+  "file": "s6-cs-morning.jpg",
+  "source": "截自旧成片 out/成片/F_客服对接.mp4 的配图画面（原图由 gpt-image-2 生成，原图文件已丢失）",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s1-price-check",
+  "file": "s1-price-check.jpg",
+  "source": "截自旧成片 out/成片/G_选品控价.mp4 的配图画面（原图由 gpt-image-2 生成，原图文件已丢失）",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
  }
 ]
