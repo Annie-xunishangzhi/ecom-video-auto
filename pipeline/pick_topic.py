@@ -1,4 +1,6 @@
-"""自动选题：从八步选题池里挑最久没做过的一步；按七比三穿插热点视频。"""
+"""自动选题：从选题池（data/topics.json，大类 → 小点）里挑最久没做过的一类，类内按顺序轮换小点；按七比三穿插热点视频。
+自定义选题跳出选题池：python pipeline/pick_topic.py --topic "退货地址自动核对" [--step 9] [--pain "痛点1,痛点2"]
+  --step 可选：挂到最接近的大类（用于素材包、话题标签、轮换记录）；不挂时 step 为 null。"""
 import datetime, json, sys
 from pathlib import Path
 
@@ -38,21 +40,44 @@ def pick(topics: list, history: list, hot_enabled: bool = False, hot_items=None,
     for i, h in enumerate(history):
         if h.get("type") == "product" and h.get("step") is not None:
             last_seen[h["step"]] = i
-            last_angle[h["step"]] = h.get("angle_index", 0)
+            if isinstance(h.get("angle_index", 0), int):   # 自定义选题的 angle_index 为 null，不影响类内轮换
+                last_angle[h["step"]] = h.get("angle_index", 0)
     topic = min(topics, key=lambda t: (last_seen.get(t["step"], -1), t["step"]))
     step = topic["step"]
     n = max(1, len(topic.get("points", [])))
     angle = (last_angle[step] + 1) % n if step in last_angle else 0
     return {"type": "product", "step": step, "angle_index": angle}
 
+def point_of(topic: dict, i: int):
+    """第 i 个小点的文字和痛点：小点可以是字符串（用大类的痛点），也可以是 {"point", "pain"}。"""
+    pts = topic.get("points") or [""]
+    pt = pts[i % len(pts)]
+    if isinstance(pt, dict): return pt["point"], pt.get("pain") or topic.get("pain") or []
+    return pt, topic.get("pain") or []
+
+def custom(argv: list, topics: list) -> dict:
+    """--topic 自定义选题；--step 挂到某个大类；--pain 逗号分隔的痛点。"""
+    def opt(k):
+        return argv[argv.index(k) + 1] if k in argv and argv.index(k) + 1 < len(argv) else None
+    text = (opt("--topic") or "").strip()
+    if not text: raise SystemExit("--topic 后面要写选题，例如 --topic \"退货地址自动核对\"")
+    step = opt("--step"); step = int(step) if step else None
+    t = next((t for t in topics if t["step"] == step), None)
+    if step is not None and not t: raise SystemExit(f"没有第 {step} 类，可选：" + "、".join(f"{t['step']} {t['name']}" for t in topics))
+    pain = [x.strip() for x in (opt("--pain") or "").replace("，", ",").split(",") if x.strip()] or (t or {}).get("pain") or []
+    return {"type": "product", "step": step, "angle_index": None, "custom": True, "name": t["name"] if t else text, "point": text, "pain": pain}
+
 if __name__ == "__main__":
     topics = json.loads((ROOT / "data" / "topics.json").read_text(encoding="utf-8"))
     hot_f = ROOT / "data" / "hot.json"
     hot_items = json.loads(hot_f.read_text(encoding="utf-8")) if hot_f.is_file() else []
-    r = pick(topics, load_history(ROOT / "data" / "history.json"), hot_enabled="--hot" in sys.argv, hot_items=hot_items)
-    if r["step"]:
-        t = next(t for t in topics if t["step"] == r["step"])
-        r.update(name=t["name"], point=t["points"][r["angle_index"] % len(t["points"])], pain=t["pain"])
+    if "--topic" in sys.argv:
+        r = custom(sys.argv, topics)
+    else:
+        r = pick(topics, load_history(ROOT / "data" / "history.json"), hot_enabled="--hot" in sys.argv, hot_items=hot_items)
+        if r["step"]:
+            t = next(t for t in topics if t["step"] == r["step"])
+            pt, pain = point_of(t, r["angle_index"]); r.update(name=t["name"], point=pt, pain=pain)
     hist = load_history(ROOT / "data" / "history.json")
     try:
         sys.path.insert(0, str(ROOT / "tools")); import report

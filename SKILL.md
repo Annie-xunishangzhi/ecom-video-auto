@@ -66,7 +66,15 @@ python -m playwright install chromium         # 录网页工具、爆款采集�
 python pipeline/pick_topic.py
 ```
 
-输出这次要做的步骤、功能点和痛点。选题池是 `data/topics.json` 里的电商运营八步。加 `--hot` 时按七比三穿插热点视频（第 12 节）。
+输出这次要做的大类（`step`、`name`）、小点（`point`）和痛点（`pain`）。选题池是 `data/topics.json`：18 个大类（选品控价、资料维护、素材、上架、推广、客服、私域、复盘、售后退款、评价口碑、库存补货、订单物流、活动大促、直播带货、财务对账、多平台铺货、合规巡检、团队日常），每类 3–7 个小点，按"最久没做的大类、类内下一个小点"轮换。加 `--hot` 时按七比三穿插热点视频（第 12 节）。
+
+**跳出选题池**（用户点名要做某个题、或池里没有合适的）：
+
+```
+python pipeline/pick_topic.py --topic "退货地址自动核对" --step 9 --pain "地址填错,退货寄丢"
+```
+
+`--step` 可选，挂到最接近的大类（素材包、话题标签、轮换记录都按它走）；不挂时 `step` 为 `null`，第 2 节的 `read_skill.py` 步骤号写 `-`。剧本里照抄输出的 `step` 和 `angle_index`（自定义选题是 `null`），并加 `"custom": true`。池里缺的好题目，做完后可以补进 `data/topics.json`（只往后加，不改已有小点的顺序）。
 
 有账号数据时（第 13 节）输出里会带 `prefer`：表现好、且近期没用过的结构和钩子写法，写剧本时优先选。
 
@@ -75,7 +83,7 @@ python pipeline/pick_topic.py
 问用户一句："这一步对应的 skill 放在哪？没有就直接回车跳过。"
 
 ```
-python pipeline/read_skill.py <步骤号> [skill 路径]
+python pipeline/read_skill.py <步骤号> [skill 路径]      # 不挂大类的自定义选题，步骤号写 -
 ```
 
 - 有路径：得到 skill 的名称、简介和功能点，剧本里 `skill.provided` 写 `true`。

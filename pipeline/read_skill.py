@@ -27,10 +27,14 @@ def _parse(text: str):
     points = [h.strip() for h in re.findall(r"^##\s+(.+)$", body, re.M)]
     return name, summary, points
 
+def _texts(points) -> list:
+    """选题池的小点可以是字符串或 {"point", "pain"}，这里统一成文字。"""
+    return [x["point"] if isinstance(x, dict) else x for x in points or []]
+
 def load_skill(path, topic: dict) -> dict:
     if path is None or not str(path).strip():
         return {"provided": False, "step": topic["step"], "name": topic["name"], "summary": "",
-                "points": list(topic["points"]), "source": None}
+                "points": _texts(topic.get("points")), "source": None}
     p = Path(str(path).strip().strip('"'))
     if not p.exists():
         raise SkillNotFound(f"找不到这个路径：{p}")
@@ -42,13 +46,15 @@ def load_skill(path, topic: dict) -> dict:
         doc = p
     name, summary, points = _parse(doc.read_text(encoding="utf-8", errors="replace"))
     return {"provided": True, "step": topic["step"], "name": name or topic["name"], "summary": summary,
-            "points": points or list(topic["points"]), "source": str(doc)}
+            "points": points or _texts(topic.get("points")), "source": str(doc)}
 
 if __name__ == "__main__":
     root = Path(__file__).resolve().parent.parent
     topics = json.loads((root / "data" / "topics.json").read_text(encoding="utf-8"))
-    step = int(sys.argv[1]); path = sys.argv[2] if len(sys.argv) > 2 else None
+    # 步骤号写 - 表示自定义选题、不挂任何大类
+    step = None if sys.argv[1] == "-" else int(sys.argv[1]); path = sys.argv[2] if len(sys.argv) > 2 else None
+    topic = next(t for t in topics if t["step"] == step) if step is not None else {"step": None, "name": "", "points": []}
     try:
-        print(json.dumps(load_skill(path, next(t for t in topics if t["step"] == step)), ensure_ascii=False, indent=1))
+        print(json.dumps(load_skill(path, topic), ensure_ascii=False, indent=1))
     except SkillNotFound as e:
         sys.exit(str(e))

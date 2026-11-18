@@ -1,7 +1,7 @@
 import pytest
 from read_skill import load_skill, SkillNotFound
 def test_none_means_skipped(topic4):
-    r = load_skill(None, topic4); assert r["provided"] is False and r["points"] == topic4["points"] and r["step"] == 4
+    r = load_skill(None, topic4); assert r["provided"] is False and r["points"] == [p["point"] if isinstance(p, dict) else p for p in topic4["points"]] and r["step"] == 4
 def test_blank_string_means_skipped(topic4):
     assert load_skill("   ", topic4)["provided"] is False
 def test_reads_frontmatter(fx, topic4):
@@ -21,3 +21,7 @@ def test_dir_without_docs_raises(tmp_path, topic4):
 def test_cjk_space_path(tmp_path, fx, topic4):
     d = tmp_path/"我的 技能"; d.mkdir(); (d/"SKILL.md").write_text((fx/"skill_ok"/"SKILL.md").read_text(encoding="utf-8"), encoding="utf-8")
     assert load_skill(str(d), topic4)["provided"]
+def test_dict_points_become_text():
+    from read_skill import load_skill
+    t = {"step": 9, "name": "售后", "points": ["a", {"point": "b", "pain": ["x"]}]}
+    assert load_skill(None, t)["points"] == ["a", "b"]

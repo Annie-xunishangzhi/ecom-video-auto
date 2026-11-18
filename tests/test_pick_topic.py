@@ -1,5 +1,5 @@
 import pytest
-from pick_topic import load_history, pick
+from pick_topic import load_history, pick, point_of, custom
 def test_first_run_missing_history_is_empty(tmp_path):
     assert load_history(tmp_path/"nope.json") == []
 def test_corrupt_history_is_empty(tmp_path):
@@ -8,17 +8,40 @@ def test_corrupt_history_is_empty(tmp_path):
 def test_non_list_history_is_empty(tmp_path):
     p = tmp_path/"h.json"; p.write_text('{"a":1}', encoding="utf-8")
     assert load_history(p) == []
+STEPS = lambda topics: [t["step"] for t in topics]
+def test_pool_is_wide(topics):
+    assert len(topics) >= 15 and sum(len(t["points"]) for t in topics) >= 60
+    assert len(set(STEPS(topics))) == len(topics)
 def test_picks_least_recently_used_step(topics):
-    hist = [{"type":"product","step":s} for s in [1,2,3,4,5,6,7]]
-    assert pick(topics, hist)["step"] == 8
+    *rest, last = STEPS(topics)
+    assert pick(topics, [{"type":"product","step":s} for s in rest])["step"] == last
 def test_never_made_step_wins_over_old_one(topics):
-    assert pick(topics, [{"type":"product","step":4}])["step"] in {1,2,3,5,6,7,8}
+    assert pick(topics, [{"type":"product","step":4}])["step"] != 4
+def _others(topics, step): return [{"type":"product","step":s} for s in STEPS(topics) if s != step]
 def test_angle_rotates_within_step(topics):
-    hist = [{"type":"product","step":4,"angle_index":0}] + [{"type":"product","step":s} for s in [1,2,3,5,6,7,8]]
+    hist = [{"type":"product","step":4,"angle_index":0}] + _others(topics, 4)
     r = pick(topics, hist); assert (r["step"], r["angle_index"]) == (4, 1)
 def test_angle_wraps_around(topics):
-    hist = [{"type":"product","step":4,"angle_index":2}] + [{"type":"product","step":s} for s in [1,2,3,5,6,7,8]]
+    n = len(next(t for t in topics if t["step"] == 4)["points"])
+    hist = [{"type":"product","step":4,"angle_index":n - 1}] + _others(topics, 4)
     assert pick(topics, hist)["angle_index"] == 0
+def test_custom_topic_in_history_does_not_break_rotation(topics):
+    hist = [{"type":"product","step":4,"angle_index":1}, {"type":"product","step":4,"angle_index":None}] + _others(topics, 4)
+    assert (pick(topics, hist)["step"], pick(topics, hist)["angle_index"]) == (4, 2)
+def test_point_text_and_dict_with_own_pain():
+    t = {"step": 1, "name": "x", "points": ["纯文字", {"point": "带痛点", "pain": ["p1"]}], "pain": ["大类痛点"]}
+    assert point_of(t, 0) == ("纯文字", ["大类痛点"]) and point_of(t, 1) == ("带痛点", ["p1"]) and point_of(t, 2)[0] == "纯文字"
+def test_every_point_is_usable(topics):
+    for t in topics:
+        for i in range(len(t["points"])):
+            pt, pain = point_of(t, i); assert pt.strip() and pain
+def test_custom_topic(topics):
+    r = custom(["x", "--topic", "退货地址自动核对", "--step", "9", "--pain", "地址填错，退货寄丢"], topics)
+    assert r["custom"] and r["step"] == 9 and r["point"] == "退货地址自动核对" and r["pain"] == ["地址填错", "退货寄丢"] and r["angle_index"] is None
+    r = custom(["x", "--topic", "跨境报关"], topics); assert r["step"] is None and r["name"] == "跨境报关"
+def test_custom_topic_rejects_bad_input(topics):
+    with pytest.raises(SystemExit): custom(["x", "--topic"], topics)
+    with pytest.raises(SystemExit): custom(["x", "--topic", "a", "--step", "999"], topics)
 def test_hot_disabled_always_product(topics):
     assert all(pick(topics, [{"type":"product","step":1}]*i)["type"]=="product" for i in range(12))
 def test_hot_enabled_keeps_7_to_3(topics):
