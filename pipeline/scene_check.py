@@ -20,7 +20,7 @@ def check_scenes(out: Path, scenes=None) -> list:
     results = []
     with tempfile.TemporaryDirectory() as tmp:
         env = {**os.environ, "CONTENT": str(content), "OUT_DIR": tmp}
-        r = subprocess.run(["node", str(ROOT / "pipeline" / "render.js"), *map(str, scenes or [])], env=env, capture_output=True, text=True, cwd=str(ROOT))
+        r = subprocess.run(["node", str(ROOT / "pipeline" / "render.js"), *map(str, scenes or [])], env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=str(ROOT))
         if r.returncode: raise SystemExit((r.stdout + r.stderr).strip()[-1500:])
         cuts = json.loads((Path(tmp) / "timeline.json").read_text(encoding="utf-8"))
         starts = [0.0] + list(cuts["cuts"])

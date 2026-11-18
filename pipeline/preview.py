@@ -3,7 +3,7 @@
 页面报错（例如元素 id 重复、KIT.frame 少传 H）会直接打印出来。
 用法：python pipeline/preview.py out/<编号> [每格秒数，默认 1] [--at 3.2 7.5 …]
 输出：out/<编号>/preview.jpg（左上角是时间）"""
-import argparse, json, subprocess, sys, tempfile
+import argparse, json, os, subprocess, sys, tempfile
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
@@ -36,7 +36,8 @@ def preview(out: Path, step: float = 1.0, at=None) -> Path:
     with tempfile.TemporaryDirectory() as tmp:
         js = Path(tmp) / "pv.js"; js.write_text(JS, encoding="utf-8")
         r = subprocess.run(["node", str(js), str(ROOT / "engine" / "index.html"), str(content), tmp, str(step), ",".join(map(str, at or []))],
-                           capture_output=True, text=True, cwd=str(ROOT))
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=str(ROOT),
+                           env={**os.environ, "NODE_PATH": str(ROOT / "node_modules")})   # 临时目录里的脚本也能找到 playwright
         if r.returncode:
             raise SystemExit((r.stdout + r.stderr).strip()[-1500:])
         info = json.loads(r.stdout.strip().splitlines()[-1])

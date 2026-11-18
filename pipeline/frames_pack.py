@@ -25,6 +25,11 @@ def concat_list(frames: list, root: Path, tail: float = 2.0) -> str:
     if fr: lines.append(f"file '{(Path(root) / fr[-1]['file'].replace(chr(92), '/')).resolve().as_posix()}'")
     return "\n".join(lines) + "\n"
 
+def concat_secs(frames: list, tail: float = 2.0) -> float:
+    """concat_list 里各段时长之和。"""
+    ats = sorted(f["at"] for f in frames)
+    return sum(max(b - a, 0.05) for a, b in zip(ats, ats[1:])) + tail
+
 def steps_from(marks: list, t0: float, total: float) -> list:
     ms = sorted(marks, key=lambda m: m["at"]); out = []
     for i, m in enumerate(ms):
@@ -43,7 +48,8 @@ def build(step, product, frames_f, marks_f, rects, root: Path = ROOT) -> Path:
         lst = Path(d) / "list.txt"; lst.write_text(concat_list(frames, root), encoding="utf-8")
         raw = Path(d) / f"kimi-{datetime.datetime.now():%Y%m%d-%H%M%S}.mp4"
         r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst),
-                            "-vf", "scale=1920:-2:flags=lanczos,fps=30,format=yuv420p", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(raw)],
+                            "-vf", "scale=1920:-2:flags=lanczos,fps=30,format=yuv420p", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+                            "-t", f"{concat_secs(frames):.3f}", str(raw)],   # 新版 ffmpeg 会让末尾重复的那张再多停一段，按清单总长截断
                            capture_output=True, text=True)
         if r.returncode: raise RuntimeError("截图拼接失败：" + r.stderr[-300:])
         total = _secs(raw)

@@ -10,7 +10,9 @@ def cjk_root(tmp_path_factory):
     """把工程复制到一个带中文和空格的目录里，并放进一首测试曲子"""
     src = Path(__file__).resolve().parent.parent; dst = tmp_path_factory.mktemp("根") / "测试 目录"
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns("node_modules", "out", ".git", ".superpowers", ".secrets", "__pycache__", ".pytest_cache", "*.m4a", "library.json", "history.json"))
-    os.symlink(src/"node_modules", dst/"node_modules", target_is_directory=True)
+    try: os.symlink(src/"node_modules", dst/"node_modules", target_is_directory=True)
+    except OSError:   # Windows 普通账户不能建符号链接，改用目录联接
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(dst/"node_modules"), str(src/"node_modules")], check=True, capture_output=True)
     t = dst/"t.wav"; write_wav(t, tone(220, 20.0, 0.4))
     r = subprocess.run([sys.executable, str(dst/"tools"/"add_track.py"), str(t), "--mood", "upbeat", "--source", "测试", "--license", "测试用", "--attribution", "测试署名"], capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
