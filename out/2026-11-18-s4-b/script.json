@@ -1,0 +1,82 @@
+{
+ "id": "2026-11-18-s4-b",
+ "type": "product",
+ "step": 4,
+ "angle_index": 1,
+ "skill": {"provided": true, "name": "pdd-publish-assistant"},
+ "structure": "timer-race",
+ "mid_hook": "result_first",
+ "theme": "mint",
+ "mood": "calm",
+ "title": "价格和库存填反了，你多久才发现？",
+ "tags": ["#电商自动化", "#拼多多运营", "#商品上架", "#店铺运营"],
+ "cta": {"keyword": "核对", "platform": "douyin"},
+ "images": [
+  {"scene": 0, "prompt": "白天的电商运营工位，显示器上左边是商品发布表单、右边是一张商品资料表格，桌上有便签、计算器和一个鞋盒，窗边自然光，画面不出现任何品牌标识和文字", "file": "s4b-desk-form.jpg"}
+ ],
+ "scenes": [
+  {
+   "type": "timer",
+   "about": "manual",
+   "vo": "上一款新品，手动填标题、类目、规格、价格、库存，十几分钟就过去了。",
+   "visual": "clock",
+   "image": "s4b-desk-form.jpg",
+   "fields": ["标题", "类目", "规格", "价格", "库存"],
+   "head": "手动填{s:十几分钟}",
+   "note": "估算"
+  },
+  {
+   "type": "hookContrast",
+   "vo": "手动是填完再查，错了得一格格回头找；发布助手是填一项、读回核对一项。",
+   "visual": "versus",
+   "left": {"label": "手动", "value": "填完才查", "note": ""},
+   "right": {"label": "发布助手", "value": "填一项核一项", "note": ""},
+   "rows": [["价格", "库存"], ["规格", "货号"], ["标题", "类目"]],
+   "wrong": "价格和库存填反了",
+   "mascot": {"pos": "bottomRight", "pose": "shock", "S": 260, "x": 800, "f": 1462, "in": 1.0}
+  },
+  {
+   "type": "footage",
+   "slot": "hook",
+   "vo": "看，它把标题和货号填进后台，马上读回来对一遍。",
+   "visual": "real",
+   "line": "实录 · 拼多多商家后台",
+   "win": "商品发布 · 基本信息",
+   "tag": "已读回"
+  },
+  {
+   "type": "bars",
+   "mid_hook": true,
+   "vo": "那它凭什么一项都不填错？关键在最后一步。",
+   "visual": "why",
+   "head": "凭什么{s:一项不错}？",
+   "items": [["手动", "填完才查"], ["发布助手", "每项读回"]],
+   "key": "关键在最后一步"
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "关键就是读回：每填一格，它都从页面上再读一遍，和你的资料对不上，就停下来提醒你。",
+   "visual": "readback",
+   "num": "读回",
+   "head": "填一格{s:读一格}",
+   "src": "你的资料",
+   "page": "后台页面",
+   "pairs": [["标题", "透气网面运动鞋"], ["货号", "DR9752"], ["价格", "199"], ["库存", "120"]],
+   "bad": 3,
+   "badval": "12",
+   "stop": "对不上，先停下提醒你"
+  },
+  {
+   "type": "cta",
+   "vo": "这个拼多多发布助手免费送，关注我，评论区发核对两个字，私信发你。",
+   "visual": "cta",
+   "kicker": "拼多多发布助手 · 免费领",
+   "title": "关注{b}{s:评论「核对」}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "核对",
+   "mascot": {"pos": "cta", "pose": "wave", "wave": true, "hop": [0.7], "in": 0.6}
+  }
+ ]
+}

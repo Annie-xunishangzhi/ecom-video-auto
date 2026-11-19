@@ -1,0 +1,156 @@
+{
+ "id": "2026-11-18-s2-b",
+ "type": "product",
+ "step": 2,
+ "angle_index": 1,
+ "skill": {
+  "provided": true,
+  "name": "商品资料整理与检查"
+ },
+ "structure": "count-up",
+ "mid_hook": "pitfall",
+ "theme": "dusk",
+ "mood": "tense",
+ "title": "几千行商品资料，你还在用眼睛对？",
+ "tags": [
+  "#电商自动化",
+  "#商品资料",
+  "#店铺运营",
+  "#电商运营"
+ ],
+ "cta": {
+  "keyword": "检查",
+  "platform": "douyin"
+ },
+ "images": [
+  {
+   "scene": 1,
+   "prompt": "傍晚的电商办公室，显示器上是密密麻麻的表格行列色块，一副眼镜和眼药水放在键盘旁，窗外是紫色的黄昏，画面不出现任何品牌标识和文字",
+   "file": "s2b-eyes-sheet.jpg"
+  }
+ ],
+ "scenes": [
+  {
+   "type": "counter",
+   "measured": true,
+   "vo": "实测十行商品资料，它不到一秒就查完了。",
+   "visual": "count",
+   "from": 0,
+   "to": 10,
+   "unit": "行",
+   "title": "实测",
+   "caption": "不到 1 秒查完",
+   "mascot": {
+    "pos": "bottomRight",
+    "pose": "cheer",
+    "S": 260,
+    "x": 800,
+    "f": 1462,
+    "in": 2.0
+   }
+  },
+  {
+   "type": "photo",
+   "about": "manual",
+   "image": "s2b-eyes-sheet.jpg",
+   "vo": "平时几千行资料，全靠眼睛一行行对，缺了哪项、哪个编码重复，看到眼花也找不全。",
+   "visual": "eyes",
+   "head": "看到{s:眼花}",
+   "sub": "几千行 · 估算",
+   "cols": [
+    "商品名称",
+    "SKU编码",
+    "规格",
+    "售价",
+    "库存"
+   ]
+  },
+  {
+   "type": "statement",
+   "vo": "交给它，必填项缺没缺、编码重没重复，一次全标出来。",
+   "visual": "mark",
+   "head": "一次{s:全标出来}",
+   "rows": [
+    [
+     "棉质圆领短袖",
+     "000087",
+     "米白 / M"
+    ],
+    [
+     "冰丝防晒衣",
+     "",
+     "浅蓝 / L"
+    ],
+    [
+     "运动短裤",
+     "000112",
+     "黑 / XL"
+    ],
+    [
+     "速干T恤",
+     "000112",
+     "灰 / M"
+    ]
+   ],
+   "miss": "缺项",
+   "dup": "重复",
+   "ok": "通过"
+  },
+  {
+   "type": "footage",
+   "slot": "mid",
+   "mid_hook": true,
+   "vo": "看实录，点开始，问题马上标出来。不过有个坑最隐蔽，后面告诉你。",
+   "visual": "real",
+   "line": "实录 · 商品资料检查",
+   "win": "商品资料整理与检查",
+   "trap": "有个坑最隐蔽"
+  },
+  {
+   "type": "steps",
+   "vo": "它一共查五样：必填缺失、重复编码、同款不同价、无效售价、异常库存。",
+   "visual": "five",
+   "head": "一共查{s:五样}",
+   "items": [
+    "必填缺失",
+    "重复编码",
+    "同款不同价",
+    "无效售价",
+    "异常库存"
+   ]
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "最隐蔽的坑，是编码前面的零：表格一转就被吃掉，两个编码撞成一个。它会原样保留，还提醒你核对。",
+   "visual": "zero",
+   "head": "编码前面的{s:零}",
+   "a": "000087",
+   "b": "87",
+   "eaten": "表格一转就没了",
+   "clash": "撞成同一个",
+   "keep": "原样保留",
+   "warn": "提醒你核对",
+   "col": "SKU编码"
+  },
+  {
+   "type": "cta",
+   "vo": "这个商品资料检查工具免费送，关注我，评论区发检查两个字，私信发你。",
+   "visual": "cta",
+   "kicker": "商品资料检查 · 免费领",
+   "title": "关注{b}{s:评论「检查」}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "检查",
+   "mascot": {
+    "pos": "cta",
+    "pose": "wave",
+    "wave": true,
+    "hop": [
+     0.7
+    ],
+    "in": 0.6
+   }
+  }
+ ]
+}

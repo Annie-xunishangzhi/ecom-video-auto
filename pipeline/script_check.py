@@ -149,7 +149,11 @@ def check(script: dict, history: list, measured=None) -> list:
 if __name__ == "__main__":
     from pick_topic import load_history
     script = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    probs = check(script, load_history(ROOT / "data" / "history.json"))
+    measured = None   # 和出片时一样：有确认过的素材包就拿它的实测值来核对 measured 场景
+    if script.get("step") is not None:
+        from pack import load_pack
+        measured = (load_pack(f"s{script['step']}") or {}).get("measured")
+    probs = check(script, load_history(ROOT / "data" / "history.json"), measured)
     print(f"估算时长 {estimate_seconds(script):.1f} 秒")
     for p in probs: print("✗", p)
     if not probs: print("✓ 剧本检查通过")

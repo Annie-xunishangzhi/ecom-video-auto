@@ -1,0 +1,80 @@
+{
+ "id": "2026-11-18-s2-d",
+ "type": "product",
+ "step": 2,
+ "angle_index": null,
+ "custom": true,
+ "skill": {"provided": true, "name": "商品资料整理与检查"},
+ "structure": "question-then-pitfall",
+ "mid_hook": "pitfall",
+ "theme": "dusk",
+ "mood": "calm",
+ "title": "三个供应商三种表格，还在手动改格式？",
+ "tags": ["#电商自动化", "#商品资料", "#电商运营", "#店铺运营"],
+ "cta": {"keyword": "格式", "platform": "douyin"},
+ "images": [
+  {"scene": 0, "prompt": "傍晚的电商办公桌上并排摊着三张样式各不相同的打印表格，有的被荧光笔涂过，有的折了角，旁边是便签和一支笔，紫色黄昏光线，画面不出现任何品牌标识和可辨认的文字", "file": "s2d-three-sheets.jpg"}
+ ],
+ "scenes": [
+  {
+   "type": "photo",
+   "about": "manual",
+   "image": "s2d-three-sheets.jpg",
+   "vo": "三个供应商发来三份表：有的叫售价，有的叫价格，数字还是全角的，带着人民币符号。",
+   "visual": "messy",
+   "head": "三份表{s:三个样}",
+   "sheets": [["品名", "售价"], ["商品名称", "价格"], ["名称", "单价"]],
+   "vals": ["￥８９．００", " 89 ", "89元"],
+   "mascot": {"pos": "bottomRight", "pose": "shock", "S": 250, "x": 810, "f": 1462, "in": 4.2}
+  },
+  {
+   "type": "statement",
+   "vo": "交给它，列名不一样也认得出来，自动对上商品名称、编码、规格、售价、库存。",
+   "visual": "mapcols",
+   "head": "列名{s:自动对上}",
+   "raw": ["品名", "货号", "颜色尺码", "单价", "数量"],
+   "std": ["商品名称", "SKU编码", "规格", "售价", "库存"]
+  },
+  {
+   "type": "timer",
+   "about": "manual",
+   "vo": "以前一份份手动改格式，一份表就得十几分钟，还容易改错。",
+   "visual": "clock",
+   "head": "一份表{s:十几分钟}",
+   "note": "估算",
+   "fix": ["￥８９．００", "89.00"]
+  },
+  {
+   "type": "steps",
+   "mid_hook": true,
+   "hide_last": true,
+   "vo": "它分三步：先认出列名，再统一格式，第三步是躲开一个大坑，很多人都踩过。",
+   "visual": "trap",
+   "head": "它分{s:三步}",
+   "items": ["认出列名", "统一格式", "躲开一个大坑"],
+   "mascot": {"pos": "bottomRight", "pose": "point", "S": 250, "x": 810, "f": 1462, "hop": [0.6]}
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "这个坑，就是把原始资料改丢了。它不动你的原文件，原始值和改了哪里，都留着记录。",
+   "visual": "keep",
+   "head": "原文件{s:一点不动}",
+   "file": "原文件",
+   "log": [["售价", "￥８９．００", "89.00"], ["规格", " 米白/M ", "米白 / M"], ["库存", "３６", "36"]],
+   "logname": "修改记录",
+   "lost": "改丢了"
+  },
+  {
+   "type": "cta",
+   "vo": "这个商品资料检查工具免费送，关注我，评论区发格式两个字，私信发你。",
+   "visual": "cta",
+   "kicker": "商品资料检查 · 免费领",
+   "title": "关注{b}{s:评论「格式」}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "格式",
+   "mascot": {"pos": "cta", "pose": "wave", "wave": true, "hop": [0.7], "in": 0.6}
+  }
+ ]
+}

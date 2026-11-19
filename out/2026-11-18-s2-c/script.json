@@ -1,0 +1,89 @@
+{
+ "id": "2026-11-18-s2-c",
+ "type": "product",
+ "step": 2,
+ "angle_index": 2,
+ "skill": {"provided": true, "name": "商品资料整理与检查"},
+ "structure": "contrast-then-suspense",
+ "mid_hook": "steps",
+ "theme": "paper",
+ "mood": "playful",
+ "title": "同一个款写了两个价，你能一眼看出来吗？",
+ "tags": ["#电商自动化", "#商品资料", "#电商运营", "#店铺运营"],
+ "cta": {"keyword": "复查", "platform": "douyin"},
+ "images": [
+  {"scene": 0, "prompt": "白天明亮的办公桌，笔记本电脑屏幕上是一张商品表格的色块，旁边一张纸质价目单上用红笔圈出两处，便利贴和一支红笔，浅米色暖调，画面不出现任何品牌标识和可辨认的文字", "file": "s2c-price-sheet.jpg"}
+ ],
+ "scenes": [
+  {
+   "type": "hookContrast",
+   "image": "s2c-price-sheet.jpg",
+   "vo": "同一个款，表格里写了两个价，库存栏里还有负数。手动对，得一格格翻；交给它，直接标出来。",
+   "visual": "flags",
+   "left": {"label": "手动", "value": "一格格翻", "note": ""},
+   "right": {"label": "检查工具", "value": "直接标出来", "note": ""},
+   "cells": [["速干T恤 · 灰 / M", "89.00", "36"], ["速干T恤 · 灰 / M", "79.00", "36"], ["冰丝防晒衣 · 浅蓝 / L", "129.00", "-3"], ["运动短裤 · 黑 / XL", "59.00", "120"]],
+   "price": "同款不同价",
+   "stock": "库存异常",
+   "mascot": {"pos": "bottomRight", "pose": "shock", "S": 250, "x": 810, "f": 1462, "in": 1.6}
+  },
+  {
+   "type": "footage",
+   "slot": "hook",
+   "vo": "看实录，载入资料，点开始，结果马上就出来。",
+   "visual": "real",
+   "line": "实录 · 商品资料检查",
+   "win": "商品资料整理与检查"
+  },
+  {
+   "type": "statement",
+   "vo": "价格对不上、库存不对劲，它都标成需修正，一行行定位给你看。",
+   "visual": "fixme",
+   "head": "一行行{s:定位给你}",
+   "tabs": ["通过", "需修正", "待核对"],
+   "rows": [["速干T恤 · 灰 / M", "需修正", "同款不同价"], ["冰丝防晒衣 · 浅蓝 / L", "需修正", "库存为负"], ["运动短裤 · 黑 / XL", "通过", ""], ["棉质圆领短袖 · 米白 / M", "待核对", "编码前导零"]]
+  },
+  {
+   "type": "steps",
+   "mid_hook": true,
+   "hide_last": true,
+   "vo": "用它只要三步：第一步上传表格，第二步点开始检查，第三步最关键，最后说。",
+   "visual": "steps3",
+   "head": "只要{s:三步}",
+   "items": ["上传表格", "点开始检查", "最关键的一步"],
+   "mascot": {"pos": "bottomRight", "pose": "point", "S": 250, "x": 810, "f": 1462, "hop": [0.6]}
+  },
+  {
+   "type": "footage",
+   "slot": "mid",
+   "measured": true,
+   "vo": "实测十行资料，检查不到一秒，统计和问题全都列出来了。",
+   "visual": "result",
+   "line": "实录 · 10 行 · 不到 1 秒",
+   "win": "检查结果"
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "第三步，下载检查报告，照着问题清单改完，再传一次复查，直到全部通过。",
+   "visual": "report",
+   "num": "03",
+   "head": "改完{s:再传一次}",
+   "sheets": ["整理结果", "问题清单", "修改记录", "原始资料", "说明"],
+   "fix": "照着清单改",
+   "again": "再传一次复查",
+   "pass": "全部通过"
+  },
+  {
+   "type": "cta",
+   "vo": "这个商品资料检查工具免费送，关注我，评论区发复查两个字，私信发你。",
+   "visual": "cta",
+   "kicker": "商品资料检查 · 免费领",
+   "title": "关注{b}{s:评论「复查」}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "复查",
+   "mascot": {"pos": "cta", "pose": "wave", "wave": true, "hop": [0.7], "in": 0.6}
+  }
+ ]
+}

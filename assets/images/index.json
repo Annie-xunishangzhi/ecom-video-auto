@@ -62,5 +62,68 @@
   "prompt": "大促刚结束的电商售后工位，深夜，显示器上是一长串退款申请列表的色块和红色角标，桌上堆着退回来的快递纸箱和撕开的快递袋，台灯暖光",
   "license": "自有（模型生成）",
   "date": "2026-11-18"
+ },
+ {
+  "id": "s4b-desk-form",
+  "file": "s4b-desk-form.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "白天的电商运营工位，显示器上左边是商品发布表单、右边是一张商品资料表格，桌上有便签、计算器和一个鞋盒，窗边自然光",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s2b-eyes-sheet",
+  "file": "s2b-eyes-sheet.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "傍晚的电商办公室，显示器上是密密麻麻的表格行列色块，一副眼镜和眼药水放在键盘旁，窗外是紫色的黄昏",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s4c-morning-boxes",
+  "file": "s4c-morning-boxes.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "上午的电商运营工位，三个样品鞋盒整齐排在桌上，显示器上是商品发布页面的色块，一杯咖啡，阳光斜照",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s2c-price-sheet",
+  "file": "s2c-price-sheet.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "白天明亮的办公桌，笔记本电脑屏幕上是一张商品表格的色块，旁边一张纸质价目单上用红笔圈出两处，便利贴和一支红笔，浅米色暖调",
+  "license": "自有（模型生成）",
+  "date": "2026-11-18"
+ },
+ {
+  "id": "s4d-size-night",
+  "file": "s4d-size-night.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "夜里的电商工位，显示器上是一张很长的规格表格色块，桌上叠着几层鞋盒，台灯冷暖混合光，一只手按在键盘上",
+  "license": "自有（模型生成）",
+  "date": "2026-11-19"
+ },
+ {
+  "id": "s2d-three-sheets",
+  "file": "s2d-three-sheets.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "傍晚的电商办公桌上并排摊着三张样式各不相同的打印表格，有的被荧光笔涂过，有的折了角，旁边是便签和一支笔，紫色黄昏光线",
+  "license": "自有（模型生成）",
+  "date": "2026-11-19"
+ },
+ {
+  "id": "s4e-offline-night",
+  "file": "s4e-offline-night.jpg",
+  "source": "generated",
+  "model": "gpt-image-2",
+  "prompt": "深夜的电商工位，笔记本电脑屏幕上是一个填到一半的表单色块和一个断开的网络图标，桌上的路由器指示灯发出红光，冷色调",
+  "license": "自有（模型生成）",
+  "date": "2026-11-19"
  }
 ]

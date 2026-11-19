@@ -1,0 +1,82 @@
+{
+ "id": "2026-11-18-s4-e",
+ "type": "product",
+ "step": 4,
+ "angle_index": null,
+ "custom": true,
+ "skill": {"provided": true, "name": "pdd-publish-assistant"},
+ "structure": "timer-race",
+ "mid_hook": "best_feature",
+ "theme": "ink",
+ "mood": "tense",
+ "title": "上架填到一半断网了，交没交上？",
+ "tags": ["#电商自动化", "#拼多多运营", "#商品上架", "#电商运营"],
+ "cta": {"keyword": "断线", "platform": "douyin"},
+ "images": [
+  {"scene": 0, "prompt": "深夜的电商工位，笔记本电脑屏幕上是一个填到一半的表单色块和一个断开的网络图标，桌上的路由器指示灯发出红光，冷色调，画面不出现任何品牌标识和可辨认的文字", "file": "s4e-offline-night.jpg"}
+ ],
+ "scenes": [
+  {
+   "type": "timer",
+   "about": "manual",
+   "image": "s4e-offline-night.jpg",
+   "vo": "填到一半，浏览器断了。手动的话，刚才填了哪些、交没交，全得重新查一遍。",
+   "visual": "drop",
+   "fields": ["标题", "类目", "规格", "价格", "库存"],
+   "cut": "连接断开",
+   "head": "交没交？{s:全得重查}"
+  },
+  {
+   "type": "hookContrast",
+   "vo": "最怕的是不知道交没交，再点一次，就重复提交了。发布助手会把每一步做到哪，都记下来。",
+   "visual": "twice",
+   "left": {"label": "手动", "value": "再点一次", "note": ""},
+   "right": {"label": "发布助手", "value": "每一步都记下", "note": ""},
+   "dup": "重复提交",
+   "item": "透气网面运动鞋",
+   "log": ["资料核对", "图片核对", "规格读回", "草稿保存"],
+   "mascot": {"pos": "bottomRight", "pose": "shock", "S": 250, "x": 810, "f": 1462, "in": 2.6}
+  },
+  {
+   "type": "footage",
+   "slot": "hook",
+   "vo": "看实录，它边填边记，哪个字段核对过了，都写进任务记录。",
+   "visual": "real",
+   "line": "实录 · 拼多多商家后台",
+   "win": "商品发布 · 基本信息",
+   "rec": "任务记录",
+   "recs": ["类目 · 已核对", "标题 · 已核对", "货号 · 已核对"]
+  },
+  {
+   "type": "bars",
+   "mid_hook": true,
+   "vo": "它有两个本事：断了接着填，交没交先查清。最省心的是哪个？最后说。",
+   "visual": "two",
+   "head": "两个{s:本事}",
+   "items": [["断了", "接着填"], ["交没交", "先查清"]],
+   "q": "最省心的是哪个？",
+   "mascot": {"pos": "bottomRight", "pose": "point", "S": 250, "x": 810, "f": 1462, "hop": [0.6]}
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "最省心的是这个：提交前它先记一笔，万一卡住了，先去后台查结果，绝不重发。",
+   "visual": "noresend",
+   "head": "卡住了{s:绝不重发}",
+   "flow": ["先记一笔", "点一次提交", "卡住了", "去后台查结果", "已提交 · 待审核"],
+   "no": "再点一次",
+   "stamp": "不重发"
+  },
+  {
+   "type": "cta",
+   "vo": "这个拼多多发布助手免费送，关注我，评论区发断线两个字，私信发你。",
+   "visual": "cta",
+   "kicker": "拼多多发布助手 · 免费领",
+   "title": "关注{b}{s:评论「断线」}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "断线",
+   "mascot": {"pos": "cta", "pose": "wave", "wave": true, "hop": [0.7], "in": 0.6}
+  }
+ ]
+}

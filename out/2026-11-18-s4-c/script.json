@@ -1,0 +1,79 @@
+{
+ "id": "2026-11-18-s4-c",
+ "type": "product",
+ "step": 4,
+ "angle_index": 2,
+ "skill": {"provided": true, "name": "pdd-publish-assistant"},
+ "structure": "day-in-life",
+ "mid_hook": "best_feature",
+ "theme": "ink",
+ "mood": "warm",
+ "title": "上架最怕的不是填表，是手快点了提交",
+ "tags": ["#电商自动化", "#拼多多运营", "#商品上架", "#电商运营"],
+ "cta": {"keyword": "确认", "platform": "douyin"},
+ "images": [
+  {"scene": 0, "prompt": "上午的电商运营工位，三个样品鞋盒整齐排在桌上，显示器上是商品发布页面的色块，一杯咖啡，阳光斜照，画面不出现任何品牌标识和文字", "file": "s4c-morning-boxes.jpg"}
+ ],
+ "scenes": [
+  {
+   "type": "photo",
+   "about": "manual",
+   "image": "s4c-morning-boxes.jpg",
+   "vo": "上午十点，三款新品等着上架。最怕的不是填表，是手一快，点了提交。",
+   "visual": "morning",
+   "time": "10:00",
+   "items": ["新品 A", "新品 B", "新品 C"],
+   "btn": "提交",
+   "head": "手一快{s:点了提交}",
+   "mascot": {"pos": "bottomRight", "pose": "shock", "S": 260, "x": 800, "f": 1462, "in": 3.4}
+  },
+  {
+   "type": "hookContrast",
+   "vo": "填错一格还能改，提交出去再发现就麻烦了。发布助手不一样，到了提交这一步，它一定先停下。",
+   "visual": "brake",
+   "left": {"label": "手动", "value": "直接提交", "note": ""},
+   "right": {"label": "发布助手", "value": "先停下", "note": ""},
+   "oops": "提交出去才发现",
+   "stop": "停"
+  },
+  {
+   "type": "footage",
+   "slot": "hook",
+   "vo": "看实录，表单全部填好，它停在提交按钮前面，不点。",
+   "visual": "real",
+   "line": "实录 · 拼多多商家后台",
+   "win": "商品发布 · 规格与库存",
+   "guard": "停在提交前 · 不点"
+  },
+  {
+   "type": "statement",
+   "mid_hook": true,
+   "vo": "它有三个本事：照资料填、填完读回、提交前停下。最让人安心的是哪个？最后说。",
+   "visual": "three",
+   "head": "三个{s:本事}",
+   "items": ["照资料填", "填完读回", "提交前停下"],
+   "q": "最安心的是哪个？"
+  },
+  {
+   "type": "reveal",
+   "payoff": true,
+   "vo": "最安心的，就是提交前这一步：它把商品、价格、库存列成一张核对清单，你点头，它才提交。",
+   "visual": "checklist",
+   "head": "你点头{s:它才提交}",
+   "list": ["商品与类目", "主图与详情图", "规格", "价格与库存", "物流与服务"],
+   "nod": "你点头",
+   "go": "才提交"
+  },
+  {
+   "type": "cta",
+   "vo": "这个拼多多发布助手免费送，关注我，评论区发确认两个字，私信发你。",
+   "visual": "cta",
+   "kicker": "拼多多发布助手 · 免费领",
+   "title": "关注{b}{s:评论「确认」}",
+   "follow": "关注我",
+   "followed": "已关注",
+   "keyword": "确认",
+   "mascot": {"pos": "cta", "pose": "wave", "wave": true, "hop": [0.7], "in": 0.6}
+  }
+ ]
+}

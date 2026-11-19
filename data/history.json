@@ -106,5 +106,89 @@
   "theme": "paper",
   "track": "composed-66508",
   "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s4-b",
+  "date": "2026-11-18",
+  "type": "product",
+  "step": 4,
+  "angle_index": 1,
+  "structure": "timer-race",
+  "mid_hook": "result_first",
+  "theme": "mint",
+  "track": "composed-78181",
+  "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s2-b",
+  "date": "2026-11-18",
+  "type": "product",
+  "step": 2,
+  "angle_index": 1,
+  "structure": "count-up",
+  "mid_hook": "pitfall",
+  "theme": "dusk",
+  "track": "composed-65207",
+  "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s4-c",
+  "date": "2026-11-18",
+  "type": "product",
+  "step": 4,
+  "angle_index": 2,
+  "structure": "day-in-life",
+  "mid_hook": "best_feature",
+  "theme": "ink",
+  "track": "composed-86355",
+  "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s2-c",
+  "date": "2026-11-19",
+  "type": "product",
+  "step": 2,
+  "angle_index": 2,
+  "structure": "contrast-then-suspense",
+  "mid_hook": "steps",
+  "theme": "paper",
+  "track": "composed-86145",
+  "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s4-d",
+  "date": "2026-11-19",
+  "type": "product",
+  "step": 4,
+  "angle_index": 3,
+  "structure": "pain-then-result-first",
+  "mid_hook": "result_first",
+  "theme": "mint",
+  "track": "composed-84560",
+  "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s2-d",
+  "date": "2026-11-19",
+  "type": "product",
+  "step": 2,
+  "angle_index": null,
+  "structure": "question-then-pitfall",
+  "mid_hook": "pitfall",
+  "theme": "dusk",
+  "track": "composed-88354",
+  "has_footage": true
+ },
+ {
+  "id": "2026-11-18-s4-e",
+  "date": "2026-11-19",
+  "type": "product",
+  "step": 4,
+  "angle_index": null,
+  "structure": "timer-race",
+  "mid_hook": "best_feature",
+  "theme": "ink",
+  "track": "composed-98502",
+  "has_footage": true
  }
 ]
